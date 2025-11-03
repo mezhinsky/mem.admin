@@ -1,27 +1,47 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import RootLayout from './layouts/RootLayout'
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import RootLayout from "./layouts/RootLayout";
 
-import Dashboard from './pages/Dashboard'
-import Articles from './pages/articles/page'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-import './index.css'
+import Dashboard from "./pages/Dashboard";
+import Articles from "./pages/articles";
+
+import "./index.css";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <RootLayout />,
     children: [
-      { path: '/', element: <Dashboard /> },
-      { path: '/articles', element: <Articles /> },
+      { path: "/", element: <Dashboard /> },
+      { path: "/articles", element: <Articles /> },
     ],
   },
-])
+]);
 
-createRoot(document.getElementById('root')!).render(
+// Общие настройки кэша и стейла — можно корректировать под себя
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1, // одна попытка повторить при ошибке
+      refetchOnWindowFocus: false,
+      staleTime: 30_000, // 30с считаем данные свежими
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   </StrictMode>
-)
+);

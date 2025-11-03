@@ -1,6 +1,10 @@
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink } from "react-router-dom";
 
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar"
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,9 +12,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { AppSidebar } from "@/components/app-sidebar"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { AppSidebar } from "@/components/app-sidebar";
 
 export default function Layout() {
   return (
@@ -39,10 +43,10 @@ export default function Layout() {
             </Breadcrumb>
           </div>
         </header>
-        <section className='px-6'>
+        <section className="px-4">
           <Outlet />
         </section>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
