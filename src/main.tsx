@@ -9,6 +9,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Dashboard from "./pages/Dashboard";
 import Articles from "./pages/articles";
+import Article from "./pages/article/page";
 
 import "./index.css";
 
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Dashboard /> },
       { path: "/articles", element: <Articles /> },
+      { path: "/article", element: <Article /> },
     ],
   },
 ]);
