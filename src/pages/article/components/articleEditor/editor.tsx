@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -14,16 +14,28 @@ export default function AdminEditor({
 }: AdminEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: initialContent || "<p>Напиши статью...</p>",
+    content: "<p>Загрузка...</p>", // стартовое значение
     onUpdate: ({ editor }) => {
       const json = editor.getJSON();
-      onChange?.(json); // передаём JSON наверх, чтобы сохранить
+      onChange?.(json);
     },
   });
 
+  // 🧠 Синхронизируем, когда приходит новое initialContent
+  useEffect(() => {
+    if (editor && initialContent) {
+      // если пришёл JSON из API
+      if (typeof initialContent === "object") {
+        editor.commands.setContent(initialContent);
+      } else {
+        // если пришёл HTML
+        editor.commands.setContent(initialContent);
+      }
+    }
+  }, [initialContent, editor]);
+
   if (!editor) return null;
 
-  // простейший тулбар
   return (
     <div className="border rounded-lg p-4 bg-white">
       <div className="flex gap-2 mb-2 border-b pb-2">
@@ -46,9 +58,12 @@ export default function AdminEditor({
         >
           H2
         </button>
+        <button onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
+          Code block
+        </button>
       </div>
 
-      <EditorContent editor={editor} className="prose min-h-[200px]" />
+      <EditorContent editor={editor} style={{ outlineColor: "transparent" }} />
     </div>
   );
 }

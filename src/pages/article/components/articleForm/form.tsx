@@ -1,6 +1,8 @@
+import { forwardRef, useImperativeHandle } from "react";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+
 import {
   Form,
   FormControl,
@@ -11,52 +13,116 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
-import { z } from "zod";
-
+// 🎯 схема валидации
 const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
+  title: z
+    .string()
+    .min(3, { message: "Введите заголовок (минимум 3 символа)" }),
+  description: z.string().optional(),
+  published: z.boolean(),
 });
 
-export function ProfileForm() {
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-    },
-  });
+type ArticleFormValues = z.infer<typeof formSchema>;
 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
-  }
+// 👇 тип для ref — что родитель сможет вызывать у формы
+export type ArticleFormHandle = {
+  getValues: () => ArticleFormValues;
+  reset: (data?: Partial<ArticleFormValues>) => void;
+};
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
-      </form>
-    </Form>
-  );
+interface ArticleFormProps {
+  data?: Partial<ArticleFormValues>;
 }
+
+// 🧩 сам компонент
+const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
+  ({ data }, ref) => {
+    const form = useForm<ArticleFormValues>({
+      resolver: zodResolver(formSchema),
+      defaultValues: {
+        title: data?.title || "",
+        description: data?.description || "",
+        published: data?.published ?? false,
+      },
+    });
+
+    // Экспортируем наружу методы getValues() и reset()
+    useImperativeHandle(ref, () => ({
+      getValues: form.getValues,
+      reset: form.reset,
+    }));
+
+    return (
+      <Form {...form}>
+        <form className="space-y-6 border rounded-lg p-6 bg-white">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Заголовок статьи</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Например: Как собрать модель X-Wing"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Это название статьи, которое будет отображаться на сайте.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Описание</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Краткое описание статьи..."
+                    className="min-h-[80px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Необязательное поле. Показывается в списке статей.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="published"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Опубликовано</FormLabel>
+                  <FormDescription>
+                    Сделает статью видимой на сайте.
+                  </FormDescription>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    );
+  }
+);
+
+export default ArticleForm;
