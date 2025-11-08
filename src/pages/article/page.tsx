@@ -69,25 +69,29 @@ export default function DemoPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <ArticleForm ref={formRef} data={article} />
-
-      <div className="mt-6">
-        <ArticleEditor initialContent={content} onChange={setContent} />
+    <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
+      {/* 🧾 Левая колонка — форма */}
+      <div>
+        <ArticleForm ref={formRef} data={article} />
       </div>
 
-      <div className="flex justify-end mt-4">
-        <Button
-          onClick={handleSave}
-          size="sm"
-          variant="outline"
-          disabled={updateMutation.isPending}
-        >
-          {updateMutation.isPending && (
-            <Spinner className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          {updateMutation.isPending ? "Сохранение..." : "Сохранить"}
-        </Button>
+      {/* ✍️ Правая колонка — редактор */}
+      <div className="flex flex-col">
+        <ArticleEditor initialContent={content} onChange={setContent} />
+
+        <div className="flex justify-end mt-4">
+          <Button
+            onClick={handleSave}
+            size="sm"
+            variant="outline"
+            disabled={updateMutation.isPending}
+          >
+            {updateMutation.isPending && (
+              <Spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {updateMutation.isPending ? "Сохранение..." : "Сохранить"}
+          </Button>
+        </div>
       </div>
     </div>
   );
