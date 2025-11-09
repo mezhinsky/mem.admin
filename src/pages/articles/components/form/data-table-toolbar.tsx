@@ -25,9 +25,10 @@ export function DataTableToolbar<TData>({
         <Input
           placeholder="Filter articles..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
+          onChange={(event) => {
+            const value = event.target.value;
+            table.getColumn("title")?.setFilterValue(value ? value : undefined);
+          }}
           className="h-8 w-[150px] lg:w-[250px]"
         />
         {table.getColumn("status") && (

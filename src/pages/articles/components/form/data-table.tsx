@@ -11,10 +11,18 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type OnChangeFn,
   type SortingState,
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
+
+declare module "@tanstack/react-table" {
+  interface TableMeta<TData> {
+    goToPage?: (pageIndex: number) => void;
+    changePageSize?: (size: number) => void;
+  }
+}
 
 import {
   Table,
@@ -34,6 +42,12 @@ interface DataTableProps<TData, TValue> {
   page: number;
   totalPages: number;
   limit: number;
+  sorting: SortingState;
+  filters: ColumnFiltersState;
+  onPageChange: (page: number) => void;
+  onLimitChange: (limit: number) => void;
+  onSortingChange: (updater: SortingState) => void;
+  onFiltersChange: (filters: ColumnFiltersState) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -42,33 +56,58 @@ export function DataTable<TData, TValue>({
   page,
   totalPages,
   limit,
+  sorting,
+  filters,
+  onPageChange,
+  onLimitChange,
+  onSortingChange,
+  onFiltersChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  // const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+  //   []
+  // );
+  // const [sorting, setSorting] = React.useState<SortingState>([]);
+
+  const handleSortingChange: OnChangeFn<SortingState> = (updaterOrValue) => {
+    const nextSorting =
+      typeof updaterOrValue === "function"
+        ? updaterOrValue(sorting)
+        : updaterOrValue;
+    onSortingChange(nextSorting);
+  };
+
+  const handleFiltersChange: OnChangeFn<ColumnFiltersState> = (updater) => {
+    const next = typeof updater === "function" ? updater(filters) : updater;
+    onFiltersChange(next);
+  };
 
   const table = useReactTable({
     data,
     columns,
+    getRowId: (row) => String((row as { id: string | number }).id),
     state: {
       sorting,
       columnVisibility,
       rowSelection,
-      columnFilters,
+      columnFilters: filters,
+      pagination: { pageIndex: page - 1, pageSize: limit },
     },
-    initialState: {
-      pagination: {
-        pageSize: limit,
-      },
+    meta: {
+      goToPage: (pageIdx: number) => onPageChange?.(pageIdx + 1),
+      changePageSize: (size: number) => onLimitChange?.(size),
     },
     enableRowSelection: true,
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
+
+    pageCount: totalPages,
     onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: handleSortingChange,
+    onColumnFiltersChange: handleFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),

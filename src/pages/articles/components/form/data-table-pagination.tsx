@@ -34,7 +34,7 @@ export function DataTablePagination<TData>({
           <Select
             value={`${table.getState().pagination.pageSize}`}
             onValueChange={(value) => {
-              table.setPageSize(Number(value)); //navige to page size
+              table.options.meta?.changePageSize?.(Number(value)); //navige to page size
             }}
           >
             <SelectTrigger className="h-8 w-[70px]">
@@ -59,7 +59,7 @@ export function DataTablePagination<TData>({
             variant="outline"
             size="icon"
             className="hidden size-8 lg:flex"
-            onClick={() => table.setPageIndex(0)}
+            onClick={() => table.options.meta?.goToPage?.(0)}
             disabled={!table.getCanPreviousPage()}
           >
             <span className="sr-only">Go to first page</span>
@@ -69,7 +69,10 @@ export function DataTablePagination<TData>({
             variant="outline"
             size="icon"
             className="size-8"
-            onClick={() => table.previousPage()}
+            onClick={() => {
+              const nextPage = table.getState().pagination.pageIndex - 1;
+              table.options.meta?.goToPage?.(nextPage);
+            }}
             disabled={!table.getCanPreviousPage()}
           >
             <span className="sr-only">Go to previous page</span>
@@ -79,7 +82,10 @@ export function DataTablePagination<TData>({
             variant="outline"
             size="icon"
             className="size-8"
-            onClick={() => table.nextPage()}
+            onClick={() => {
+              const nextPage = table.getState().pagination.pageIndex + 1;
+              table.options.meta?.goToPage?.(nextPage);
+            }}
             disabled={!table.getCanNextPage()}
           >
             <span className="sr-only">Go to next page</span>
@@ -89,7 +95,10 @@ export function DataTablePagination<TData>({
             variant="outline"
             size="icon"
             className="hidden size-8 lg:flex"
-            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            onClick={() => {
+              const lastPageIndex = table.getPageCount() - 1;
+              table.options.meta?.goToPage?.(lastPageIndex);
+            }}
             disabled={!table.getCanNextPage()}
           >
             <span className="sr-only">Go to last page</span>

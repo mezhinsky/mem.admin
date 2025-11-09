@@ -1,10 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "@/pages/articles/components/form/columns";
-import { DataTable } from "./components/articlesTable/table";
 
 import { DataTable as MMTable } from "@/pages/articles/components/form/data-table";
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
 
 export default function DemoPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,6 +72,16 @@ export default function DemoPage() {
     });
   };
 
+  const sorting = useMemo<SortingState>(
+    () => [{ id: sortBy, desc: order === "desc" }],
+    [sortBy, order]
+  );
+
+  const filters = useMemo<ColumnFiltersState>(
+    () => (search ? [{ id: "title", value: search }] : []),
+    [search]
+  );
+
   // 🔹 Отображение
   if (isLoading) {
     return <div className="p-6 text-muted-foreground">Загрузка...</div>;
@@ -79,25 +89,16 @@ export default function DemoPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-4">
-      {/* <div className="flex items-center gap-4">
-        <input
-          type="text"
-          placeholder="Поиск..."
-          className="border px-3 py-2 rounded w-64"
-          defaultValue={search}
-          onChange={(e) => handleSearch(e.target.value)}
-        />
-      </div> */}
-
-      {/* <DataTable
-        columns={columns}
+      <MMTable
         data={data.items}
         page={page}
         totalPages={data.totalPages}
-        limit={limit} // ✅ добавили
+        limit={limit}
+        columns={columns}
+        sorting={sorting}
+        filters={filters}
         onPageChange={handlePageChange}
         onLimitChange={(newLimit) => {
-          // ✅ добавили
           setSearchParams({
             page: "1",
             limit: String(newLimit),
@@ -106,16 +107,19 @@ export default function DemoPage() {
             ...(search ? { search } : {}),
           });
         }}
-        onSortChange={handleSortChange}
-        isLoading={isFetching}
-      /> */}
-
-      <MMTable
-        data={data.items}
-        page={page}
-        totalPages={data.totalPages}
-        limit={limit}
-        columns={columns}
+        onSortingChange={(next) => {
+          const [first] = next;
+          handleSortChange(
+            first?.id ?? "createdAt",
+            first?.desc ? "desc" : "asc"
+          );
+        }}
+        onFiltersChange={(next) => {
+          const titleFilter = next.find((f) => f.id === "title");
+          handleSearch(
+            titleFilter && titleFilter.value ? String(titleFilter.value) : ""
+          );
+        }}
       />
     </div>
   );
