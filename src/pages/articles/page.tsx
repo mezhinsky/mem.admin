@@ -1,40 +1,116 @@
-import { useEffect, useState } from "react";
-import { columns, type Article } from "./components/articlesTable/columns";
+import { useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { columns } from "@/pages/articles/components/form/columns";
 import { DataTable } from "./components/articlesTable/table";
 
-import { useQuery } from "@tanstack/react-query";
-
-// async function getData(): Promise<Article[]> {
-//   // Здесь можешь заменить на реальный fetch('/api/payments')
-//   return [
-//     { id: "728ed52f", amount: 100, status: "pending", email: "m@example.com" },
-//     { id: "2aa4c91b", amount: 230, status: "success", email: "jane@example.com" },
-//   ]
-// }
+import { DataTable as MMTable } from "@/pages/articles/components/form/data-table";
 
 export default function DemoPage() {
-  // const [data, setData] = useState<Payment[]>([])
-  // const [loading, setLoading] = useState(true)
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => (await fetch("http://localhost:3000/articles")).json(),
+  // 🔹 Получаем параметры из URL
+  const page = Number(searchParams.get("page")) || 1;
+  const limit = Number(searchParams.get("limit")) || 10;
+  const sortBy = searchParams.get("sortBy") || "createdAt";
+  const order = searchParams.get("order") || "desc";
+  const search = searchParams.get("search") || "";
+
+  // 🔹 Формируем queryKey — зависит от параметров
+  const queryKey = useMemo(
+    () => ["articles", { page, limit, sortBy, order, search }],
+    [page, limit, sortBy, order, search]
+  );
+
+  // 🔹 Загружаем данные
+  const { data, isLoading, isFetching } = useQuery<any>({
+    queryKey,
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sortBy,
+        order,
+        ...(search ? { search } : {}),
+      });
+
+      const res = await fetch(`http://localhost:3000/articles?${params}`);
+      if (!res.ok) throw new Error("Ошибка загрузки статей");
+      return res.json();
+    },
+    placeholderData: (prev) => prev, // 👈 заменяет keepPreviousData
   });
 
-  useEffect(() => {
-    // getData().then((res) => {
-    //   setData(res)
-    //   setLoading(false)
-    // })
-  }, []);
+  // 🔹 Обработчики изменения фильтров / сортировки / страниц
+  const handlePageChange = (newPage: number) => {
+    setSearchParams({
+      page: String(newPage),
+      limit: String(limit),
+      sortBy,
+      order,
+      ...(search ? { search } : {}),
+    });
+  };
 
+  const handleSortChange = (field: string, dir: "asc" | "desc") => {
+    setSearchParams({
+      page: String(page),
+      limit: String(limit),
+      sortBy: field,
+      order: dir,
+      ...(search ? { search } : {}),
+    });
+  };
+
+  const handleSearch = (term: string) => {
+    setSearchParams({
+      page: "1",
+      limit: String(limit),
+      sortBy,
+      order,
+      search: term,
+    });
+  };
+
+  // 🔹 Отображение
   if (isLoading) {
     return <div className="p-6 text-muted-foreground">Загрузка...</div>;
   }
 
   return (
-    <div className="container mx-auto">
-      <DataTable columns={columns} data={data} />
+    <div className="container mx-auto p-4 space-y-4">
+      {/* <div className="flex items-center gap-4">
+        <input
+          type="text"
+          placeholder="Поиск..."
+          className="border px-3 py-2 rounded w-64"
+          defaultValue={search}
+          onChange={(e) => handleSearch(e.target.value)}
+        />
+      </div> */}
+
+      {/* <DataTable
+        columns={columns}
+        data={data.items}
+        page={page}
+        totalPages={data.totalPages}
+        limit={limit} // ✅ добавили
+        onPageChange={handlePageChange}
+        onLimitChange={(newLimit) => {
+          // ✅ добавили
+          setSearchParams({
+            page: "1",
+            limit: String(newLimit),
+            sortBy,
+            order,
+            ...(search ? { search } : {}),
+          });
+        }}
+        onSortChange={handleSortChange}
+        isLoading={isFetching}
+      /> */}
+
+      <MMTable data={data.items} columns={columns} />
     </div>
   );
 }
