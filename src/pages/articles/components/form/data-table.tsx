@@ -12,6 +12,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type OnChangeFn,
+  type RowSelectionState,
   type SortingState,
   useReactTable,
   type VisibilityState,
@@ -21,6 +22,7 @@ declare module "@tanstack/react-table" {
   interface TableMeta<TData> {
     goToPage?: (pageIndex: number) => void;
     changePageSize?: (size: number) => void;
+    rowSelectionCount?: number;
   }
 }
 
@@ -44,10 +46,14 @@ interface DataTableProps<TData, TValue> {
   limit: number;
   sorting: SortingState;
   filters: ColumnFiltersState;
+  rowSelection: RowSelectionState;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
   onSortingChange: (updater: SortingState) => void;
   onFiltersChange: (filters: ColumnFiltersState) => void;
+  onRowSelectionChange: (
+    updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)
+  ) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -58,12 +64,14 @@ export function DataTable<TData, TValue>({
   limit,
   sorting,
   filters,
+  rowSelection,
   onPageChange,
   onLimitChange,
   onSortingChange,
   onFiltersChange,
+  onRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = React.useState({});
+  // const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   // const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -84,6 +92,12 @@ export function DataTable<TData, TValue>({
     onFiltersChange(next);
   };
 
+  const handleRowSelectionChange: OnChangeFn<RowSelectionState> = (updater) => {
+    const next =
+      typeof updater === "function" ? updater(rowSelection) : updater;
+    onRowSelectionChange(next);
+  };
+
   const table = useReactTable({
     data,
     columns,
@@ -91,13 +105,14 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
+      rowSelection: rowSelection,
       columnFilters: filters,
       pagination: { pageIndex: page - 1, pageSize: limit },
     },
     meta: {
       goToPage: (pageIdx: number) => onPageChange?.(pageIdx + 1),
       changePageSize: (size: number) => onLimitChange?.(size),
+      rowSelectionCount: Object.keys(rowSelection).length,
     },
     enableRowSelection: true,
     manualPagination: true,
@@ -105,7 +120,7 @@ export function DataTable<TData, TValue>({
     manualFiltering: true,
 
     pageCount: totalPages,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: handleRowSelectionChange,
     onSortingChange: handleSortingChange,
     onColumnFiltersChange: handleFiltersChange,
     onColumnVisibilityChange: setColumnVisibility,

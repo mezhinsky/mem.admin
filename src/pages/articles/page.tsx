@@ -1,10 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "@/pages/articles/components/form/columns";
 
 import { DataTable as MMTable } from "@/pages/articles/components/form/data-table";
-import type { ColumnFiltersState, SortingState } from "@tanstack/react-table";
+import type {
+  ColumnFiltersState,
+  RowSelectionState,
+  SortingState,
+} from "@tanstack/react-table";
 
 export default function DemoPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,6 +76,8 @@ export default function DemoPage() {
     });
   };
 
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
   const sorting = useMemo<SortingState>(
     () => [{ id: sortBy, desc: order === "desc" }],
     [sortBy, order]
@@ -97,6 +103,7 @@ export default function DemoPage() {
         columns={columns}
         sorting={sorting}
         filters={filters}
+        rowSelection={rowSelection}
         onPageChange={handlePageChange}
         onLimitChange={(newLimit) => {
           setSearchParams({
@@ -120,6 +127,7 @@ export default function DemoPage() {
             titleFilter && titleFilter.value ? String(titleFilter.value) : ""
           );
         }}
+        onRowSelectionChange={setRowSelection}
       />
     </div>
   );
