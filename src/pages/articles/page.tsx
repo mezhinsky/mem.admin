@@ -110,7 +110,13 @@ export default function DemoPage() {
         isLoading={isFetching}
       /> */}
 
-      <MMTable data={data.items} columns={columns} />
+      <MMTable
+        data={data.items}
+        page={page}
+        totalPages={data.totalPages}
+        limit={limit}
+        columns={columns}
+      />
     </div>
   );
 }
