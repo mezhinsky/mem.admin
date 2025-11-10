@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Outlet } from "react-router-dom";
 
 import {
@@ -16,13 +16,21 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { AppSidebar } from "@/components/app-sidebar";
-import { BreadcrumbProvider } from "@/hooks/use-breadcrumb";
+import {
+  BreadcrumbProvider,
+  type Breadcrumb as BreadcrumbType,
+} from "@/hooks/use-breadcrumb";
 
 export default function Layout() {
-  const [breadcrumbPage, setBreadcrumbPage] = useState("Dashboard");
+  const [breadcrumbPage, setBreadcrumbPage] = useState<BreadcrumbType[]>([
+    { link: "/", label: "Home" },
+    { link: "#", label: "Dashboard" },
+  ]);
 
   return (
-    <BreadcrumbProvider value={{ page: breadcrumbPage, setPage: setBreadcrumbPage }}>
+    <BreadcrumbProvider
+      value={{ page: breadcrumbPage, setPage: setBreadcrumbPage }}
+    >
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
@@ -35,15 +43,31 @@ export default function Layout() {
               />
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#">
-                      Building Your Application
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                  <BreadcrumbSeparator className="hidden md:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage>{breadcrumbPage}</BreadcrumbPage>
-                  </BreadcrumbItem>
+                  {breadcrumbPage.map((crumb, index) => {
+                    const isLast = index === breadcrumbPage.length - 1;
+                    return (
+                      <Fragment key={crumb.label}>
+                        <BreadcrumbItem
+                          className={
+                            index === 0 && !isLast
+                              ? "hidden md:block"
+                              : undefined
+                          }
+                        >
+                          {isLast ? (
+                            <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                          ) : (
+                            <BreadcrumbLink href={crumb.link}>
+                              {crumb.label}
+                            </BreadcrumbLink>
+                          )}
+                        </BreadcrumbItem>
+                        {!isLast && (
+                          <BreadcrumbSeparator className="hidden md:block" />
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </BreadcrumbList>
               </Breadcrumb>
             </div>

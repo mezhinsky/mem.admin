@@ -43,7 +43,7 @@ export default function DemoPage() {
       if (!res.ok) throw new Error("Ошибка загрузки статей");
       return res.json();
     },
-    placeholderData: (prev) => prev, // 👈 заменяет keepPreviousData
+    placeholderData: (prev: unknown) => prev, // 👈 заменяет keepPreviousData
   });
 
   // 🔹 Обработчики изменения фильтров / сортировки / страниц
@@ -91,7 +91,10 @@ export default function DemoPage() {
   );
 
   useEffect(() => {
-    setBreadcrumbPage("Articles");
+    setBreadcrumbPage([
+      { link: "/", label: "Home" },
+      { link: "/articles", label: "Articles" },
+    ]);
   }, [setBreadcrumbPage]);
 
   // 🔹 Отображение

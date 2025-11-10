@@ -7,11 +7,14 @@ import ArticleForm, {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import ArticleEditor from "@/pages/article/components/articleEditor/editor";
+import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 
 export default function DemoPage() {
   const { id } = useParams();
   const [content, setContent] = useState(null);
   const formRef = useRef<ArticleFormHandle>(null);
+
+  const { setPage: setBreadcrumbPage } = useBreadcrumb();
 
   // Загружаем статью
   const { data: article, isLoading } = useQuery({
@@ -40,6 +43,14 @@ export default function DemoPage() {
       console.error(err);
     },
   });
+
+  useEffect(() => {
+    setBreadcrumbPage([
+      { link: "/", label: "Home" },
+      { link: "/articles", label: "Articles" },
+      { link: "", label: `${article?.title}` },
+    ]);
+  }, [setBreadcrumbPage, article]);
 
   // Загружаем контент при изменении статьи
   useEffect(() => {

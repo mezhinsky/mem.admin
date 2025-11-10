@@ -1,8 +1,13 @@
 import { createContext, useContext } from "react";
 
+export type Breadcrumb = {
+  link: string;
+  label: string;
+};
+
 export type BreadcrumbContextValue = {
-  page: string;
-  setPage: (label: string) => void;
+  page: Breadcrumb[];
+  setPage: (value: Breadcrumb[]) => void;
 };
 
 export const BreadcrumbContext = createContext<BreadcrumbContextValue | null>(
