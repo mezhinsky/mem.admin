@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "@/pages/articles/components/form/columns";
@@ -9,6 +9,7 @@ import type {
   RowSelectionState,
   SortingState,
 } from "@tanstack/react-table";
+import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 
 export default function DemoPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -77,6 +78,7 @@ export default function DemoPage() {
   };
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const { setPage: setBreadcrumbPage } = useBreadcrumb();
 
   const sorting = useMemo<SortingState>(
     () => [{ id: sortBy, desc: order === "desc" }],
@@ -87,6 +89,10 @@ export default function DemoPage() {
     () => (search ? [{ id: "title", value: search }] : []),
     [search]
   );
+
+  useEffect(() => {
+    setBreadcrumbPage("Articles");
+  }, [setBreadcrumbPage]);
 
   // 🔹 Отображение
   if (isLoading) {

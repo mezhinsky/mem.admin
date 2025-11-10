@@ -31,9 +31,9 @@ export function DataTableToolbar<TData>({
           }}
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("status") && (
+        {/* {table.getColumn("published") && (
           <DataTableFacetedFilter
-            column={table.getColumn("status")}
+            column={table.getColumn("published")}
             title="Status"
             options={statuses}
           />
@@ -44,7 +44,7 @@ export function DataTableToolbar<TData>({
             title="Priority"
             options={priorities}
           />
-        )}
+        )} */}
         {isFiltered && (
           <Button
             variant="ghost"
@@ -58,7 +58,7 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
-        <Button size="sm">Add Task</Button>
+        <Button size="sm">Добавить пост</Button>
       </div>
     </div>
   );

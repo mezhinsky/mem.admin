@@ -7,7 +7,7 @@ import {
   CircleOff,
   HelpCircle,
   Timer,
-} from "lucide-react"
+} from "lucide-react";
 
 export const labels = [
   {
@@ -22,35 +22,20 @@ export const labels = [
     value: "documentation",
     label: "Documentation",
   },
-]
+];
 
 export const statuses = [
   {
-    value: "backlog",
-    label: "Backlog",
+    value: true,
+    label: "Опубликовано",
     icon: HelpCircle,
   },
   {
-    value: "todo",
-    label: "Todo",
+    value: false,
+    label: "Черновик",
     icon: Circle,
   },
-  {
-    value: "in progress",
-    label: "In Progress",
-    icon: Timer,
-  },
-  {
-    value: "done",
-    label: "Done",
-    icon: CheckCircle,
-  },
-  {
-    value: "canceled",
-    label: "Canceled",
-    icon: CircleOff,
-  },
-]
+];
 
 export const priorities = [
   {
@@ -68,4 +53,4 @@ export const priorities = [
     value: "high",
     icon: ArrowUp,
   },
-]
+];
