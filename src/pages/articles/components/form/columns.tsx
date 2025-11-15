@@ -43,8 +43,8 @@ export const columns: ColumnDef<Article>[] = [
       <DataTableColumnHeader column={column} title="ID" />
     ),
     cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
-    enableSorting: false,
-    enableHiding: false,
+    enableSorting: true,
+    enableHiding: true,
   },
   {
     accessorKey: "title",

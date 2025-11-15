@@ -1,5 +1,6 @@
 "use client";
 
+import { Link } from "react-router-dom";
 import {
   Folder,
   Forward,
@@ -24,43 +25,68 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { Collapsible } from "@radix-ui/react-collapsible";
 
-export function NavProjects({
-  projects,
-}: {
-  projects: {
-    name: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
-}) {
+type Project = {
+  name: string;
+  url: string;
+  icon?: LucideIcon;
+  items?: Project[];
+};
+
+export function NavProjects({ projects }: { projects: Project[] }) {
   const { isMobile } = useSidebar();
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
-              </a>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
+        {projects.map((item) => {
+          const ItemIcon = item.icon ?? Folder;
+          return (
+            <Collapsible
+              key={item.name}
+              asChild
+              defaultOpen={true}
+              className="group/collapsible"
+            >
+              <SidebarMenuItem key={item.name}>
+                <SidebarMenuButton asChild>
+                  <Link to={item.url}>
+                    <ItemIcon />
+                    <span>{item.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+                {item.items && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      asChild
+                      className="focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    >
+                      <SidebarMenuAction showOnHover>
+                        <MoreHorizontal />
+                        <span className="sr-only">More</span>
+                      </SidebarMenuAction>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent
+                      className="w-48 rounded-lg"
+                      side={isMobile ? "bottom" : "right"}
+                      align={isMobile ? "end" : "start"}
+                    >
+                      {item.items &&
+                        item.items.map((subItem) => {
+                          const SubIcon = subItem.icon ?? Folder;
+                          return (
+                            <DropdownMenuItem key={subItem.name} asChild>
+                              <Link to={subItem.url}>
+                                <SubIcon />
+                                <span>{subItem.name}</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      {/* <DropdownMenuItem>
                   <Folder className="text-muted-foreground" />
                   <span>View Project</span>
                 </DropdownMenuItem>
@@ -72,17 +98,14 @@ export function NavProjects({
                 <DropdownMenuItem>
                   <Trash2 className="text-muted-foreground" />
                   <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+                </DropdownMenuItem> */}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </SidebarMenuItem>
+            </Collapsible>
+          );
+        })}
       </SidebarMenu>
     </SidebarGroup>
   );

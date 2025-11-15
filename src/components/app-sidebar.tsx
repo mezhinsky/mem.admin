@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import {
+  Pen,
   AudioWaveform,
   BookOpen,
   Bot,
@@ -12,6 +13,9 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
+  icons,
+  Rows2,
+  TableOfContents,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -141,19 +145,13 @@ const data = {
   ],
   projects: [
     {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      name: "Посты",
+      url: "articles",
+      icon: TableOfContents,
+      items: [
+        { name: "Создать пост", url: "article", icon: Pen },
+        { name: "Все посты", url: "articles", icon: TableOfContents },
+      ],
     },
   ],
 };
@@ -169,15 +167,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="#">
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">MosEislyModels</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        {/* <NavMain items={data.navMain} /> */}
         <NavProjects projects={data.projects} />
+        {/* <NavMain items={data.navMain} /> */}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

@@ -92,8 +92,8 @@ export default function DemoPage() {
 
   useEffect(() => {
     setBreadcrumbPage([
-      { link: "/", label: "Home" },
-      { link: "/articles", label: "Articles" },
+      { link: "/", label: "Главная" },
+      { link: "/articles", label: "Посты" },
     ]);
   }, [setBreadcrumbPage]);
 
