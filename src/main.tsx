@@ -8,8 +8,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Dashboard from "./pages/Dashboard";
-import Articles from "./pages/articles";
-import Article from "./pages/article/page";
+import Articles from "./pages/articles/list/page";
+import Article from "./pages/articles/item/page";
+import ArticleCreate from "./pages/articles/new/page";
 
 import "./index.css";
 
@@ -20,6 +21,7 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Dashboard /> },
       { path: "/articles", element: <Articles /> },
+      { path: "/articles/new", element: <ArticleCreate /> },
       { path: "/articles/:id", element: <Article /> },
     ],
   },

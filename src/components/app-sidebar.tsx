@@ -149,7 +149,7 @@ const data = {
       url: "articles",
       icon: TableOfContents,
       items: [
-        { name: "Создать пост", url: "article", icon: Pen },
+        { name: "Создать пост", url: "articles/new", icon: Pen },
         { name: "Все посты", url: "articles", icon: TableOfContents },
       ],
     },

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { columns } from "@/pages/articles/components/form/columns";
+import { columns } from "@/pages/articles/list/components/form/columns";
 
-import { DataTable as MMTable } from "@/pages/articles/components/form/data-table";
+import { DataTable as MMTable } from "@/pages/articles/list/components/form/data-table";
 import type {
   ColumnFiltersState,
   RowSelectionState,

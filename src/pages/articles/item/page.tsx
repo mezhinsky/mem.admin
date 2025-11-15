@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ArticleForm, {
   type ArticleFormHandle,
-} from "@/pages/article/components/articleForm/form";
+} from "@/pages/articles/item/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import ArticleEditor from "@/pages/article/components/articleEditor/editor";
+import ArticleEditor from "@/pages/articles/item/components/editor/editor";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 
 export default function DemoPage() {
@@ -46,8 +46,8 @@ export default function DemoPage() {
 
   useEffect(() => {
     setBreadcrumbPage([
-      { link: "/", label: "Home" },
-      { link: "/articles", label: "Articles" },
+      { link: "/", label: "Главная" },
+      { link: "/articles", label: "Посты" },
       { link: "", label: `${article?.title}` },
     ]);
   }, [setBreadcrumbPage, article]);
@@ -82,9 +82,7 @@ export default function DemoPage() {
   return (
     <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
       {/* 🧾 Левая колонка — форма */}
-      <div>
-        <ArticleForm ref={formRef} data={article} />
-      </div>
+      <ArticleForm ref={formRef} data={article} />
 
       {/* ✍️ Правая колонка — редактор */}
       <div className="flex flex-col">
