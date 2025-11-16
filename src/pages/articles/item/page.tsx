@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { Suspense, lazy, useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import ArticleForm, {
@@ -6,8 +6,11 @@ import ArticleForm, {
 } from "@/pages/articles/item/components/form/form";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import ArticleEditor from "@/pages/articles/item/components/editor/editor";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
+
+const ArticleEditor = lazy(
+  () => import("@/pages/articles/item/components/editor/editor")
+);
 
 export default function DemoPage() {
   const { id } = useParams();
@@ -86,13 +89,14 @@ export default function DemoPage() {
 
       {/* ✍️ Правая колонка — редактор */}
       <div className="flex flex-col">
-        <ArticleEditor initialContent={content} onChange={setContent} />
+        <Suspense fallback={<div className="p-4">Загрузка редактора...</div>}>
+          <ArticleEditor initialContent={content} onChange={setContent} />
+        </Suspense>
 
         <div className="flex justify-end mt-4">
           <Button
             onClick={handleSave}
             size="sm"
-            variant="outline"
             disabled={updateMutation.isPending}
           >
             {updateMutation.isPending && (

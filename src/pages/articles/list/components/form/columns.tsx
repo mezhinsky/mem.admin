@@ -1,22 +1,18 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import {
-  IconCircleCheckFilled,
-  IconCircleDashedX,
-  IconLoader,
-} from "@tabler/icons-react";
+import { IconCircleCheckFilled, IconForbid2Filled } from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { labels, priorities, statuses } from "../data/data";
-import type { Task, Article } from "../data/schema";
+import { labels } from "../data/data";
+import type { Article } from "../data/schema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { formatDate } from "@/lib/formatDate";
 
-export const columns: ColumnDef<Article>[] = [
+export const columns: ColumnDef<Article & { test: string }>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -53,7 +49,7 @@ export const columns: ColumnDef<Article>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Title" />
+      <DataTableColumnHeader column={column} title="Заголовок" />
     ),
     cell: ({ row }) => {
       const label = labels.find((label) => label.value === row.original.title);
@@ -70,7 +66,7 @@ export const columns: ColumnDef<Article>[] = [
   {
     accessorKey: "description",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Description" />
+      <DataTableColumnHeader column={column} title="Описание" />
     ),
     cell: ({ row }) => {
       const label = labels.find(
@@ -89,14 +85,14 @@ export const columns: ColumnDef<Article>[] = [
   {
     accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="CreatedAt" />
+      <DataTableColumnHeader column={column} title="Создан" />
     ),
     cell: ({ getValue }) => formatDate(getValue() as string),
   },
   {
     accessorKey: "updatedAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="UpdatedAt" />
+      <DataTableColumnHeader column={column} title="Обновлен" />
     ),
     cell: ({ getValue }) => formatDate(getValue() as string),
   },
@@ -104,14 +100,14 @@ export const columns: ColumnDef<Article>[] = [
   {
     accessorKey: "published",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Published" />
+      <DataTableColumnHeader column={column} title="Опубликован" />
     ),
     cell: ({ row }) => (
       <Badge variant="outline" className="text-muted-foreground px-1.5">
         {row.original.published == true ? (
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
         ) : (
-          <IconCircleDashedX className="fill-red-500 dark:fill-red-400" />
+          <IconForbid2Filled className="fill-red-500 dark:fill-red-400" />
         )}
         {/* {row.original.published ? "Yes" : "No"} */}
       </Badge>

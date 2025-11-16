@@ -6,9 +6,10 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableViewOptions } from "@/pages/articles/list/components/form/data-table-view-options";
+import { Link } from "react-router-dom";
 
-import { priorities, statuses } from "../data/data";
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+// import { priorities, statuses } from "../data/data";
+// import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -23,7 +24,7 @@ export function DataTableToolbar<TData>({
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center gap-2">
         <Input
-          placeholder="Filter articles..."
+          placeholder="Фильтр по заголовку..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) => {
             const value = event.target.value;
@@ -58,7 +59,9 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
-        <Button size="sm">Добавить пост</Button>
+        <Button size="sm" asChild>
+          <Link to="/articles/new">Добавить пост</Link>
+        </Button>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Articles from "./pages/articles/list/page";
 import Article from "./pages/articles/item/page";
 import ArticleCreate from "./pages/articles/new/page";
+import { Toaster } from "@/components/ui/sonner";
 
 import "./index.css";
 
@@ -47,5 +48,6 @@ createRoot(document.getElementById("root")!).render(
       <RouterProvider router={router} />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
+    <Toaster />
   </StrictMode>
 );

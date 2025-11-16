@@ -13,7 +13,8 @@ export const taskSchema = z.object({
 export type Task = z.infer<typeof taskSchema>;
 
 export const atricleSchema = z.object({
-  id: z.string(),
+  id: z.number(),
+  name: z.string(),
   title: z.string(),
   published: z.boolean(),
   description: z.string(),

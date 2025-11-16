@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -14,7 +14,7 @@ export default function AdminEditor({
 }: AdminEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "<p>Загрузка...</p>", // стартовое значение
+    content: "", // стартовое значение
     onUpdate: ({ editor }) => {
       const json = editor.getJSON();
       onChange?.(json);

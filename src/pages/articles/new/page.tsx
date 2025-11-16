@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import ArticleForm, {
   type ArticleFormHandle,
   type ArticleFormValues,
 } from "@/pages/articles/item/components/form/form";
-import ArticleEditor from "@/pages/articles/item/components/editor/editor";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+const ArticleEditor = lazy(
+  () => import("@/pages/articles/item/components/editor/editor")
+);
 
 export default function Page() {
   const formRef = useRef<ArticleFormHandle>(null);
@@ -44,6 +48,7 @@ export default function Page() {
         published: false,
       });
       setContent(null);
+      toast.info("Event has been created.");
       navigate(`/articles/${created.id}`);
     },
   });
@@ -60,15 +65,13 @@ export default function Page() {
   return (
     <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
       {/* 🧾 Левая колонка — форма */}
-      <ArticleForm
-        ref={formRef}
-        onSubmit={handleCreate}
-        formId={formId}
-      />
+      <ArticleForm ref={formRef} onSubmit={handleCreate} formId={formId} />
 
       {/* ✍️ Правая колонка — редактор */}
       <div className="flex flex-col">
-        <ArticleEditor initialContent="" onChange={setContent} />
+        <Suspense fallback={<div className="p-4">Загрузка редактора...</div>}>
+          <ArticleEditor initialContent="" onChange={setContent} />
+        </Suspense>
         <div className="flex justify-end mt-4">
           <Button
             type="submit"
