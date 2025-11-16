@@ -1,7 +1,11 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { IconCircleCheckFilled, IconForbid2Filled } from "@tabler/icons-react";
+import {
+  IconCircleCheckFilled,
+  IconForbid2Filled,
+  IconClockHour2,
+} from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,7 +46,11 @@ export const columns: ColumnDef<Article & { test: string }>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ID" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => (
+      <div className="w-[80px] text-muted-foreground font-light">
+        {row.getValue("id")}
+      </div>
+    ),
     enableSorting: true,
     enableHiding: true,
   },
@@ -75,7 +83,7 @@ export const columns: ColumnDef<Article & { test: string }>[] = [
       return (
         <div className="flex gap-2">
           {label && <Badge variant="outline">{label.label}</Badge>}
-          <span className="max-w-[500px] truncate font-medium">
+          <span className="max-w-[500px] truncate font-light text-muted-foreground">
             {row.getValue("description")}
           </span>
         </div>
@@ -87,14 +95,24 @@ export const columns: ColumnDef<Article & { test: string }>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Создан" />
     ),
-    cell: ({ getValue }) => formatDate(getValue() as string),
+    cell: ({ getValue }) => (
+      <Badge variant="outline">
+        <IconClockHour2 className="" />
+        {formatDate(getValue() as string)}
+      </Badge>
+    ),
   },
   {
     accessorKey: "updatedAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Обновлен" />
     ),
-    cell: ({ getValue }) => formatDate(getValue() as string),
+    cell: ({ getValue }) => (
+      <Badge variant="outline">
+        <IconClockHour2 className="" />
+        {formatDate(getValue() as string)}
+      </Badge>
+    ),
   },
 
   {
@@ -109,7 +127,7 @@ export const columns: ColumnDef<Article & { test: string }>[] = [
         ) : (
           <IconForbid2Filled className="fill-red-500 dark:fill-red-400" />
         )}
-        {/* {row.original.published ? "Yes" : "No"} */}
+        {row.original.published ? "Опубликован" : "Не опубликован"}
       </Badge>
     ),
   },
