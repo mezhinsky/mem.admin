@@ -57,7 +57,7 @@ export default function AdminEditor({
 
   return (
     <div className="border rounded-lg p-4 bg-white">
-      <div className="flex gap-2 mb-2 border-b pb-2 flex-wrap">
+      <div className="sticky top-0 z-20 border-b bg-white px-4 pt-4 pb-2">
         <Button
           variant="ghost"
           size="icon"
