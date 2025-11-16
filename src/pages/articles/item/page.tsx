@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import ArticleForm, {
   type ArticleFormHandle,
 } from "@/pages/articles/item/components/form/form";
@@ -30,6 +30,7 @@ export default function DemoPage() {
     enabled: !!id,
   });
 
+  const queryClient = useQueryClient();
   // Мутация сохранения
   const updateMutation = useMutation({
     mutationFn: async (payload) => {
@@ -41,7 +42,19 @@ export default function DemoPage() {
       if (!res.ok) throw new Error("Ошибка сохранения статьи");
       return res.json();
     },
-    onSuccess: () => console.log("✅ Статья успешно сохранена"),
+    onSuccess: (updated) => {
+      console.log("✅ Статья успешно сохранена");
+      queryClient.invalidateQueries({ queryKey: ["article", id] });
+      queryClient.invalidateQueries({ queryKey: ["articles"] });
+      if (formRef.current) {
+        formRef.current.reset({
+          title: updated.title,
+          description: updated.description,
+          published: updated.published,
+        });
+      }
+      setContent(updated.content);
+    },
     onError: (err) => {
       console.error(err);
     },
@@ -57,14 +70,17 @@ export default function DemoPage() {
 
   // Загружаем контент при изменении статьи
   useEffect(() => {
-    if (article && formRef.current) {
+    if (!article) return;
+
+    if (formRef.current) {
       formRef.current.reset({
         title: article.title,
         description: article.description,
         published: article.published,
       });
-      setContent(article.content);
     }
+
+    setContent(article.content);
   }, [article]);
 
   if (isLoading) return <p>Загрузка...</p>;

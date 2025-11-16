@@ -21,6 +21,7 @@ import {
   Strikethrough,
   Underline,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 interface AdminEditorProps {
   initialContent?: any; // JSON или HTML один раз при загрузке
@@ -31,6 +32,7 @@ export default function AdminEditor({
   initialContent,
   onChange,
 }: AdminEditorProps) {
+  const lastInitialContent = useRef<string | null>(null);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -44,6 +46,25 @@ export default function AdminEditor({
       onChange?.(json); // только наружу, НАЗАД не засовываем
     },
   });
+
+  useEffect(() => {
+    if (!editor) return;
+    if (!initialContent) return;
+
+    const nextContentSnapshot = JSON.stringify(initialContent);
+    const currentSnapshot = JSON.stringify(editor.getJSON());
+
+    if (
+      nextContentSnapshot === lastInitialContent.current ||
+      nextContentSnapshot === currentSnapshot
+    ) {
+      lastInitialContent.current = nextContentSnapshot;
+      return;
+    }
+
+    editor.commands.setContent(initialContent);
+    lastInitialContent.current = nextContentSnapshot;
+  }, [initialContent, editor]);
 
   if (!editor) return null;
 
