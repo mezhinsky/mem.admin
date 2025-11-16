@@ -1,7 +1,11 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { IconCircleCheckFilled, IconLoader } from "@tabler/icons-react";
+import {
+  IconCircleCheckFilled,
+  IconCircleDashedX,
+  IconLoader,
+} from "@tabler/icons-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -107,9 +111,9 @@ export const columns: ColumnDef<Article>[] = [
         {row.original.published == true ? (
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
         ) : (
-          <IconLoader />
+          <IconCircleDashedX className="fill-red-500 dark:fill-red-400" />
         )}
-        {row.original.published ? "Yes" : "No"}
+        {/* {row.original.published ? "Yes" : "No"} */}
       </Badge>
     ),
   },

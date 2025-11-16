@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle } from "react";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,7 +25,7 @@ const formSchema = z.object({
   published: z.boolean(),
 });
 
-type ArticleFormValues = z.infer<typeof formSchema>;
+export type ArticleFormValues = z.infer<typeof formSchema>;
 
 // 👇 тип для ref — что родитель сможет вызывать у формы
 export type ArticleFormHandle = {
@@ -35,11 +35,13 @@ export type ArticleFormHandle = {
 
 interface ArticleFormProps {
   data?: Partial<ArticleFormValues>;
+  onSubmit?: (values: ArticleFormValues) => void;
+  formId?: string;
 }
 
 // 🧩 сам компонент
 const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
-  ({ data }, ref) => {
+  ({ data, onSubmit, formId = "article-form" }, ref) => {
     const form = useForm<ArticleFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -49,6 +51,16 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
       },
     });
 
+    useEffect(() => {
+      if (data) {
+        form.reset({
+          title: data?.title || "",
+          description: data?.description || "",
+          published: data?.published ?? false,
+        });
+      }
+    }, [data, form]);
+
     // Экспортируем наружу методы getValues() и reset()
     useImperativeHandle(ref, () => ({
       getValues: form.getValues,
@@ -57,7 +69,11 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
 
     return (
       <Form {...form}>
-        <form className="space-y-6 border rounded-lg p-6 bg-white">
+        <form
+          id={formId}
+          className="space-y-6 border rounded-lg p-6 bg-white"
+          onSubmit={form.handleSubmit((values) => onSubmit?.(values))}
+        >
           <FormField
             control={form.control}
             name="title"
