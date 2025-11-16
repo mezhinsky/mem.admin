@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 
 import {
   SidebarProvider,
@@ -57,8 +57,8 @@ export default function Layout() {
                           {isLast ? (
                             <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                           ) : (
-                            <BreadcrumbLink href={crumb.link}>
-                              {crumb.label}
+                            <BreadcrumbLink asChild>
+                              <Link to={crumb.link}>{crumb.label}</Link>
                             </BreadcrumbLink>
                           )}
                         </BreadcrumbItem>
