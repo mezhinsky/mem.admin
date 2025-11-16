@@ -1,11 +1,30 @@
 "use client";
-import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { Button } from "@/components/ui/button";
+
+import {
+  Bold,
+  Code,
+  Eraser,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  Italic,
+  Link as LinkIcon,
+  List,
+  ListOrdered,
+  Minus,
+  Quote,
+  Strikethrough,
+  Underline,
+} from "lucide-react";
 
 interface AdminEditorProps {
-  initialContent?: any;
-  onChange?: (json: any) => void;
+  initialContent?: any; // JSON или HTML один раз при загрузке
+  onChange?: (json: any) => void; // только уведомление наверх
 }
 
 export default function AdminEditor({
@@ -13,57 +32,161 @@ export default function AdminEditor({
   onChange,
 }: AdminEditorProps) {
   const editor = useEditor({
-    extensions: [StarterKit],
-    content: "", // стартовое значение
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [2, 3, 4, 5, 6] },
+      }),
+      // сюда потом можно добавить Underline, Link extension и т.д.
+    ],
+    content: initialContent ?? "", // начальное значение
     onUpdate: ({ editor }) => {
       const json = editor.getJSON();
-      onChange?.(json);
+      onChange?.(json); // только наружу, НАЗАД не засовываем
     },
   });
 
-  // 🧠 Синхронизируем, когда приходит новое initialContent
-  useEffect(() => {
-    if (editor && initialContent) {
-      // если пришёл JSON из API
-      if (typeof initialContent === "object") {
-        editor.commands.setContent(initialContent);
-      } else {
-        // если пришёл HTML
-        editor.commands.setContent(initialContent);
-      }
-    }
-  }, [initialContent, editor]);
-
   if (!editor) return null;
+
+  const setLink = () => {
+    const url = prompt("Enter URL");
+
+    if (!url) return;
+
+    editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  };
 
   return (
     <div className="border rounded-lg p-4 bg-white">
-      <div className="flex gap-2 mb-2 border-b pb-2">
-        <button
+      <div className="flex gap-2 mb-2 border-b pb-2 flex-wrap">
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => editor.chain().focus().toggleBold().run()}
           className="font-bold"
         >
-          B
-        </button>
-        <button
+          <Bold size={14} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           className="italic"
         >
-          I
-        </button>
-        <button
+          <Italic size={14} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 2 }).run()
           }
         >
-          H2
-        </button>
-        <button onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
-          Code block
-        </button>
+          <Heading2 />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+        >
+          <Heading3 />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 4 }).run()
+          }
+        >
+          <Heading4 />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 5 }).run()
+          }
+        >
+          <Heading5 />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 6 }).run()
+          }
+        >
+          <Heading6 />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        >
+          <Code />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          <Underline />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        >
+          <Strikethrough />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          <List />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          <ListOrdered />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        >
+          <Quote />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        >
+          <Minus />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={setLink}>
+          <LinkIcon />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() =>
+            editor.chain().focus().unsetAllMarks().clearNodes().run()
+          }
+        >
+          <Eraser />
+        </Button>
       </div>
 
-      <EditorContent editor={editor} style={{ outlineColor: "transparent" }} />
+      <EditorContent
+        editor={editor}
+        className="prose-content min-h-[200px] focus-visible:outline-none"
+        style={{ outlineColor: "transparent" }}
+      />
     </div>
   );
 }

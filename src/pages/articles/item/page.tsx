@@ -90,7 +90,9 @@ export default function DemoPage() {
       {/* ✍️ Правая колонка — редактор */}
       <div className="flex flex-col">
         <Suspense fallback={<div className="p-4">Загрузка редактора...</div>}>
-          <ArticleEditor initialContent={content} onChange={setContent} />
+          <div className="prose-content">
+            <ArticleEditor initialContent={content} onChange={setContent} />
+          </div>
         </Suspense>
 
         <div className="flex justify-end mt-4">

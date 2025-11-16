@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -121,4 +122,90 @@
 
 div.tiptap.ProseMirror {
   outline-color: transparent;
+}
+
+.prose-content {
+  @apply prose prose-neutral dark:prose-invert max-w-none;
+}
+
+/* Тюнинг под твой UI */
+.prose-content h1 {
+  @apply scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance;
+}
+
+.prose-content h2 {
+  @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0;
+}
+
+.prose-content h3 {
+  @apply scroll-m-20 text-2xl font-semibold tracking-tight;
+}
+
+.prose-content h4 {
+  @apply scroll-m-20 text-xl font-semibold tracking-tight;
+}
+
+.prose-content p {
+  @apply leading-7 [&:not(:first-child)]:mt-6;
+}
+
+.prose-content a {
+  @apply font-medium underline underline-offset-4;
+}
+
+.prose-content ul {
+  @apply my-6 ml-6 list-disc;
+}
+
+.prose-content ol {
+  @apply my-6 ml-6 list-decimal;
+}
+
+.prose-content blockquote {
+  @apply mt-6 border-l-2 pl-6 italic;
+}
+
+.prose-content code {
+  @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] text-sm;
+}
+
+.prose-content pre {
+  @apply mb-4 mt-6 overflow-x-auto rounded-lg border bg-muted py-4 px-4 text-sm;
+}
+
+.prose-content img {
+  @apply rounded-lg;
+}
+
+/* Базовая типографика таблиц */
+.prose-content table {
+  @apply w-full border-collapse overflow-hidden rounded-lg my-6 text-sm;
+}
+
+.prose-content thead tr {
+  @apply bg-muted/50;
+}
+
+.prose-content th {
+  @apply border px-4 py-2 text-left font-semibold select-none
+    [&[align=center]]:text-center [&[align=right]]:text-right;
+}
+
+.prose-content td {
+  @apply border px-4 py-2 text-left
+    [&[align=center]]:text-center [&[align=right]]:text-right;
+}
+
+.prose-content tbody tr:nth-child(even) {
+  @apply bg-muted/30;
+}
+
+/* Убрать двойные линии снизу */
+.prose-content tr {
+  @apply m-0 border-t p-0;
+}
+
+/* Чтобы таблица не вываливалась на мобилках */
+.prose-content .table-wrapper {
+  @apply w-full overflow-x-auto my-6;
 }
