@@ -2,6 +2,8 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Button } from "@/components/ui/button";
+import Image from "@tiptap/extension-image";
+import { toast } from "sonner";
 
 import {
   Bold,
@@ -20,6 +22,7 @@ import {
   Quote,
   Strikethrough,
   Underline,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
@@ -37,6 +40,11 @@ export default function AdminEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3, 4, 5, 6] },
+      }),
+      Image.configure({
+        HTMLAttributes: {
+          class: "max-w-full rounded-md my-4",
+        },
       }),
       // сюда потом можно добавить Underline, Link extension и т.д.
     ],
@@ -74,6 +82,51 @@ export default function AdminEditor({
     if (!url) return;
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+  };
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:3000/uploads/images", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Не удалось загрузить изображение");
+      }
+
+      const data = await response.json();
+      const imageUrl = data.url || data.path || data.location;
+
+      if (!imageUrl) {
+        throw new Error("Сервер не вернул ссылку на изображение");
+      }
+
+      editor?.chain().focus().setImage({ src: imageUrl, alt: file.name }).run();
+
+      toast.success("Изображение добавлено");
+    } catch (error) {
+      console.error(error);
+      toast.error("Не удалось загрузить изображение");
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   return (
@@ -192,6 +245,9 @@ export default function AdminEditor({
         <Button variant="ghost" size="icon" onClick={setLink}>
           <LinkIcon />
         </Button>
+        <Button variant="ghost" size="icon" onClick={handleImageButtonClick}>
+          <ImageIcon />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -201,6 +257,13 @@ export default function AdminEditor({
         >
           <Eraser />
         </Button>
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          ref={fileInputRef}
+          onChange={handleImageUpload}
+        />
       </div>
 
       <EditorContent
