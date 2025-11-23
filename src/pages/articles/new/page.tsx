@@ -44,6 +44,7 @@ export default function Page() {
     onSuccess: (created) => {
       formRef.current?.reset({
         title: "",
+        slug: "",
         description: "",
         published: false,
       });

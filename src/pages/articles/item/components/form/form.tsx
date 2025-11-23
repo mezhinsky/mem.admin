@@ -20,7 +20,15 @@ import { Switch } from "@/components/ui/switch";
 const formSchema = z.object({
   title: z
     .string()
+    .trim()
     .min(3, { message: "Введите заголовок (минимум 3 символа)" }),
+  slug: z
+    .string()
+    .trim()
+    .min(3, { message: "Введите slug (минимум 3 символа)" })
+    .regex(/^[a-z0-9-]+$/, {
+      message: "Только строчные буквы, цифры и дефис",
+    }),
   description: z.string().optional(),
   published: z.boolean(),
 });
@@ -46,6 +54,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
       resolver: zodResolver(formSchema),
       defaultValues: {
         title: data?.title || "",
+        slug: data?.slug || "",
         description: data?.description || "",
         published: data?.published ?? false,
       },
@@ -55,6 +64,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
       if (data) {
         form.reset({
           title: data?.title || "",
+          slug: data?.slug || "",
           description: data?.description || "",
           published: data?.published ?? false,
         });
@@ -88,6 +98,29 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                 </FormControl>
                 <FormDescription>
                   Это название статьи, которое будет отображаться на сайте.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Slug</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="kak-sobrat-x-wing"
+                    {...field}
+                    onChange={(event) =>
+                      field.onChange(event.target.value.toLowerCase())
+                    }
+                  />
+                </FormControl>
+                <FormDescription>
+                  Используется в адресе страницы статьи.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

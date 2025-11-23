@@ -49,6 +49,7 @@ export default function DemoPage() {
       if (formRef.current) {
         formRef.current.reset({
           title: updated.title,
+          slug: updated.slug ?? "",
           description: updated.description,
           published: updated.published,
         });
@@ -75,6 +76,7 @@ export default function DemoPage() {
     if (formRef.current) {
       formRef.current.reset({
         title: article.title,
+        slug: article.slug ?? "",
         description: article.description,
         published: article.published,
       });
