@@ -28,14 +28,20 @@ import { useEffect, useRef } from "react";
 import { apiUrl } from "@/lib/api";
 
 interface AdminEditorProps {
-  initialContent?: any; // JSON или HTML один раз при загрузке
-  onChange?: (json: any) => void; // только уведомление наверх
+  initialContent?: unknown; // JSON или HTML один раз при загрузке
+  onChange?: (json: unknown) => void; // только уведомление наверх
 }
 
 export default function AdminEditor({
   initialContent,
   onChange,
 }: AdminEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const lastInitialContent = useRef<string | null>(null);
   const editor = useEditor({
     extensions: [
@@ -83,12 +89,6 @@ export default function AdminEditor({
     if (!url) return;
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleImageButtonClick = () => {
-    fileInputRef.current?.click();
   };
 
   const handleImageUpload = async (

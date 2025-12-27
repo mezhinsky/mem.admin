@@ -16,7 +16,7 @@ const ArticleEditor = lazy(
 
 export default function Page() {
   const formRef = useRef<ArticleFormHandle>(null);
-  const [content, setContent] = useState<any>(null);
+  const [content, setContent] = useState(null);
   const navigate = useNavigate();
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
 
@@ -29,7 +29,7 @@ export default function Page() {
   }, [setBreadcrumbPage]);
 
   const createMutation = useMutation({
-    mutationFn: async (payload: any) => {
+    mutationFn: async (payload) => {
       const res = await fetch(apiUrl("/articles"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
