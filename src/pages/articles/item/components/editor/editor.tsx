@@ -27,7 +27,6 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { apiUrl } from "@/lib/api";
 
 interface AdminEditorProps {
   initialContent?: any; // JSON или HTML один раз при загрузке
@@ -103,10 +102,13 @@ export default function AdminEditor({
     formData.append("file", file);
 
     try {
-      const response = await fetch(apiUrl("/uploads/images"), {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/uploads/images`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Не удалось загрузить изображение");

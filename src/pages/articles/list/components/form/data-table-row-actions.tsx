@@ -33,7 +33,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { apiUrl } from "@/lib/api";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -49,9 +48,12 @@ export function DataTableRowActions<TData extends { id: number }>({
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch(apiUrl(`/articles/${article.id}`), {
-        method: "DELETE",
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/articles/${article.id}`,
+        {
+          method: "DELETE",
+        }
+      );
       if (!res.ok) {
         throw new Error("Не удалось удалить статью");
       }
