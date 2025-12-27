@@ -29,7 +29,7 @@ export default function DemoPage() {
   );
 
   // 🔹 Загружаем данные
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<any>({
     queryKey,
     queryFn: async () => {
       const params = new URLSearchParams({

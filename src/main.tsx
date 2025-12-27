@@ -22,7 +22,7 @@ const Articles = lazy(() => import("./pages/articles/list/page"));
 const Article = lazy(() => import("./pages/articles/item/page"));
 const ArticleCreate = lazy(() => import("./pages/articles/new/page"));
 
-const withSuspense = (Component: LazyExoticComponent<ComponentType>) => (
+const withSuspense = (Component: LazyExoticComponent<ComponentType<any>>) => (
   <Suspense
     fallback={<div className="p-4 text-muted-foreground">Загрузка...</div>}
   >
