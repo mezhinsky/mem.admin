@@ -29,14 +29,11 @@ export default function Page() {
 
   const createMutation = useMutation({
     mutationFn: async (payload: unknown) => {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/articles/`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/articles`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
       if (!res.ok) {
         throw new Error("Не удалось создать статью");
