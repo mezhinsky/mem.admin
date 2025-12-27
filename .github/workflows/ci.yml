@@ -16,7 +16,7 @@ jobs:
 
     # ВАЖНО: env объявлен на уровне job
     env:
-      VITE_API_BASE_URL: https://api.6284765-xq71389.twc1.net/
+      VITE_API_BASE_URL: https://api.6284765-xq71389.twc1.net
 
     steps:
       - name: Checkout
