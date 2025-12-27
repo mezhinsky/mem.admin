@@ -8,16 +8,17 @@ RUN npm ci
 
 COPY . .
 
-# ВАЖНО: Vite читает VITE_* только на этапе build
+# Vite читает VITE_* ТОЛЬКО на этапе build
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
+RUN echo "Building with VITE_API_BASE_URL=$VITE_API_BASE_URL"
 RUN npm run build
 
 
 FROM nginx:1.27-alpine AS runner
 
-# SPA fallback, иначе будут 404 на /articles и т.п.
+# SPA fallback
 COPY nginx.default.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /app/dist /usr/share/nginx/html
