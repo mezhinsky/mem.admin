@@ -8,6 +8,7 @@ import ArticleForm, {
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { apiUrl } from "@/lib/api";
 
 const ArticleEditor = lazy(
   () => import("@/pages/articles/item/components/editor/editor")
@@ -29,7 +30,7 @@ export default function Page() {
 
   const createMutation = useMutation({
     mutationFn: async (payload: any) => {
-      const res = await fetch("http://localhost:3000/articles", {
+      const res = await fetch(apiUrl("/articles"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

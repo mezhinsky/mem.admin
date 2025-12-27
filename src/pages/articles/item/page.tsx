@@ -7,6 +7,7 @@ import ArticleForm, {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
+import { apiUrl } from "@/lib/api";
 
 const ArticleEditor = lazy(
   () => import("@/pages/articles/item/components/editor/editor")
@@ -23,7 +24,7 @@ export default function DemoPage() {
   const { data: article, isLoading } = useQuery({
     queryKey: ["article", id],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:3000/articles/${id}`);
+      const res = await fetch(apiUrl(`/articles/${id}`));
       if (!res.ok) throw new Error("Ошибка загрузки статьи");
       return res.json();
     },
@@ -34,7 +35,7 @@ export default function DemoPage() {
   // Мутация сохранения
   const updateMutation = useMutation({
     mutationFn: async (payload) => {
-      const res = await fetch(`http://localhost:3000/articles/${id}`, {
+      const res = await fetch(apiUrl(`/articles/${id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

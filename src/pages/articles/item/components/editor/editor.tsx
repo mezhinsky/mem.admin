@@ -25,6 +25,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { apiUrl } from "@/lib/api";
 
 interface AdminEditorProps {
   initialContent?: any; // JSON или HTML один раз при загрузке
@@ -100,7 +101,7 @@ export default function AdminEditor({
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:3000/uploads/images", {
+      const response = await fetch(apiUrl("/uploads/images"), {
         method: "POST",
         body: formData,
       });

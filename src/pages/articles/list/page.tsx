@@ -10,6 +10,7 @@ import type {
   SortingState,
 } from "@tanstack/react-table";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
+import { apiUrl } from "@/lib/api";
 
 export default function DemoPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,7 +40,7 @@ export default function DemoPage() {
         ...(search ? { search } : {}),
       });
 
-      const res = await fetch(`http://localhost:3000/articles?${params}`);
+      const res = await fetch(apiUrl(`/articles?${params}`));
       if (!res.ok) throw new Error("Ошибка загрузки статей");
       return res.json();
     },
