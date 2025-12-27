@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -36,6 +38,12 @@ export default function AdminEditor({
   initialContent,
   onChange,
 }: AdminEditorProps) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const lastInitialContent = useRef<string | null>(null);
   const editor = useEditor({
     extensions: [
@@ -83,12 +91,6 @@ export default function AdminEditor({
     if (!url) return;
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
-
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleImageButtonClick = () => {
-    fileInputRef.current?.click();
   };
 
   const handleImageUpload = async (

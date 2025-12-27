@@ -20,6 +20,7 @@ import {
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData> {
+    __type?: TData;
     goToPage?: (pageIndex: number) => void;
     changePageSize?: (size: number) => void;
     rowSelectionCount?: number;
