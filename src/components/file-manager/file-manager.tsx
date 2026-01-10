@@ -25,7 +25,12 @@ import {
   type Asset,
   uploadAsset,
 } from "@/lib/assets-api";
-import { Copy, File as FileIcon, Image as ImageIcon, Trash2 } from "lucide-react";
+import {
+  Copy,
+  File as FileIcon,
+  Image as ImageIcon,
+  Trash2,
+} from "lucide-react";
 
 export type FileManagerMode = "manage" | "pick";
 
@@ -41,11 +46,7 @@ function getThumbUrl(asset: Asset): string | null {
   const variants = asset?.metadata?.variants;
   if (!variants || typeof variants !== "object") return null;
   return (
-    variants.thumb ||
-    variants.md ||
-    variants.lg ||
-    variants.original ||
-    null
+    variants.thumb || variants.md || variants.lg || variants.original || null
   );
 }
 
@@ -145,7 +146,10 @@ export default function FileManager({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={handleUploadClick} disabled={uploadMutation.isPending}>
+          <Button
+            onClick={handleUploadClick}
+            disabled={uploadMutation.isPending}
+          >
             {uploadMutation.isPending && (
               <Spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
@@ -164,7 +168,7 @@ export default function FileManager({
       {isLoading ? (
         <div className="p-6 text-muted-foreground">Загрузка...</div>
       ) : (
-        <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]">
+        <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
           {items.map((asset) => {
             const isImage = asset.type === "IMAGE";
             const thumb = isImage ? getThumbUrl(asset) : null;
@@ -185,7 +189,11 @@ export default function FileManager({
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                        {isImage ? <ImageIcon size={18} /> : <FileIcon size={18} />}
+                        {isImage ? (
+                          <ImageIcon size={18} />
+                        ) : (
+                          <FileIcon size={18} />
+                        )}
                       </div>
                     )}
                   </div>
@@ -238,7 +246,9 @@ export default function FileManager({
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>Удалить asset?</AlertDialogTitle>
+                                <AlertDialogTitle>
+                                  Удалить asset?
+                                </AlertDialogTitle>
                                 <AlertDialogDescription>
                                   Удалит запись и файлы из S3/MinIO.
                                 </AlertDialogDescription>
@@ -246,7 +256,9 @@ export default function FileManager({
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Отмена</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => deleteMutation.mutate(asset.id)}
+                                  onClick={() =>
+                                    deleteMutation.mutate(asset.id)
+                                  }
                                 >
                                   Удалить
                                 </AlertDialogAction>
