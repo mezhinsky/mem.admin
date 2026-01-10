@@ -37,6 +37,14 @@ export type AssetsListResponse = {
   nextCursor?: string | null;
 };
 
+export async function getAsset(id: string): Promise<Asset> {
+  const res = await fetch(apiUrl(`/assets/${id}`));
+  if (!res.ok) {
+    throw new Error("Не удалось загрузить asset");
+  }
+  return res.json();
+}
+
 export async function listAssets(params: {
   page?: number;
   limit?: number;

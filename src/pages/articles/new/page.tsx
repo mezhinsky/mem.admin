@@ -47,6 +47,8 @@ export default function Page() {
         slug: "",
         description: "",
         published: false,
+        thumbnailAssetId: undefined,
+        ogImageAssetId: undefined,
       });
       setContent(null);
       toast.info("Event has been created.");

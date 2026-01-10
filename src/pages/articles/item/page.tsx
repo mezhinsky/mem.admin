@@ -57,6 +57,8 @@ export default function DemoPage() {
           slug: updated.slug ?? "",
           description: updated.description,
           published: updated.published,
+          thumbnailAssetId: updated.thumbnailAssetId ?? undefined,
+          ogImageAssetId: updated.ogImageAssetId ?? undefined,
         });
       }
       setContent(updated.content);
@@ -84,6 +86,8 @@ export default function DemoPage() {
         slug: article.slug ?? "",
         description: article.description,
         published: article.published,
+        thumbnailAssetId: article.thumbnailAssetId ?? undefined,
+        ogImageAssetId: article.ogImageAssetId ?? undefined,
       });
     }
 
