@@ -236,27 +236,32 @@ export default function AdminEditor({
       />
 
       <Dialog open={assetPickerOpen} onOpenChange={setAssetPickerOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] h-[calc(100vh-2rem)] grid-rows-[auto_1fr] overflow-hidden">
           <DialogHeader>
             <DialogTitle>Выберите изображение</DialogTitle>
           </DialogHeader>
-          <FileManager
-            mode="pick"
-            types={["IMAGE"]}
-            accept="image/*"
-            onPick={(asset) => {
-              const variants = asset?.metadata?.variants;
-              const src =
-                variants?.lg || variants?.md || variants?.original || asset.url;
-              editor
-                .chain()
-                .focus()
-                .setImage({ src, alt: asset.originalName })
-                .run();
-              toast.success("Изображение добавлено");
-              setAssetPickerOpen(false);
-            }}
-          />
+          <div className="min-h-0 overflow-y-auto">
+            <FileManager
+              mode="pick"
+              types={["IMAGE"]}
+              accept="image/*"
+              onPick={(asset) => {
+                const variants = asset?.metadata?.variants;
+                const src =
+                  variants?.lg ||
+                  variants?.md ||
+                  variants?.original ||
+                  asset.url;
+                editor
+                  .chain()
+                  .focus()
+                  .setImage({ src, alt: asset.originalName })
+                  .run();
+                toast.success("Изображение добавлено");
+                setAssetPickerOpen(false);
+              }}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
