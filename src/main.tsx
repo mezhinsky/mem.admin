@@ -22,6 +22,8 @@ const Articles = lazy(() => import("./pages/articles/list/page"));
 const Article = lazy(() => import("./pages/articles/item/page"));
 const ArticleCreate = lazy(() => import("./pages/articles/new/page"));
 
+const Assets = lazy(() => import("./pages/assets/page"));
+
 const withSuspense = (Component: LazyExoticComponent<ComponentType>) => (
   <Suspense
     fallback={<div className="p-4 text-muted-foreground">Загрузка...</div>}
@@ -39,6 +41,8 @@ const router = createBrowserRouter([
       { path: "/articles", element: withSuspense(Articles) },
       { path: "/articles/new", element: withSuspense(ArticleCreate) },
       { path: "/articles/:id", element: withSuspense(Article) },
+
+      { path: "/assets", element: withSuspense(Assets) },
     ],
   },
 ]);

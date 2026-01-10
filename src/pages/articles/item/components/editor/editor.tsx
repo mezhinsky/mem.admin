@@ -6,6 +6,13 @@ import StarterKit from "@tiptap/starter-kit";
 import { Button } from "@/components/ui/button";
 import Image from "@tiptap/extension-image";
 import { toast } from "sonner";
+import FileManager from "@/components/file-manager/file-manager";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 import {
   Bold,
@@ -26,7 +33,7 @@ import {
   Underline,
   Image as ImageIcon,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface AdminEditorProps {
   initialContent?: any; // JSON или HTML один раз при загрузке
@@ -37,11 +44,7 @@ export default function AdminEditor({
   initialContent,
   onChange,
 }: AdminEditorProps) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleImageButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  const [assetPickerOpen, setAssetPickerOpen] = useState(false);
 
   const lastInitialContent = useRef<string | null>(null);
   const editor = useEditor({
@@ -90,48 +93,6 @@ export default function AdminEditor({
     if (!url) return;
 
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-  };
-
-  const handleImageUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/uploads/images`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Не удалось загрузить изображение");
-      }
-
-      const data = await response.json();
-      const imageUrl = data.url || data.path || data.location;
-
-      if (!imageUrl) {
-        throw new Error("Сервер не вернул ссылку на изображение");
-      }
-
-      editor?.chain().focus().setImage({ src: imageUrl, alt: file.name }).run();
-
-      toast.success("Изображение добавлено");
-    } catch (error) {
-      console.error(error);
-      toast.error("Не удалось загрузить изображение");
-    } finally {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
   };
 
   return (
@@ -250,7 +211,11 @@ export default function AdminEditor({
         <Button variant="ghost" size="icon" onClick={setLink}>
           <LinkIcon />
         </Button>
-        <Button variant="ghost" size="icon" onClick={handleImageButtonClick}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setAssetPickerOpen(true)}
+        >
           <ImageIcon />
         </Button>
         <Button
@@ -262,13 +227,6 @@ export default function AdminEditor({
         >
           <Eraser />
         </Button>
-        <input
-          type="file"
-          accept="image/*"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={handleImageUpload}
-        />
       </div>
 
       <EditorContent
@@ -276,6 +234,31 @@ export default function AdminEditor({
         className="prose-content min-h-[200px] focus-visible:outline-none"
         style={{ outlineColor: "transparent" }}
       />
+
+      <Dialog open={assetPickerOpen} onOpenChange={setAssetPickerOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Выберите изображение</DialogTitle>
+          </DialogHeader>
+          <FileManager
+            mode="pick"
+            types={["IMAGE"]}
+            accept="image/*"
+            onPick={(asset) => {
+              const variants = asset?.metadata?.variants;
+              const src =
+                variants?.lg || variants?.md || variants?.original || asset.url;
+              editor
+                .chain()
+                .focus()
+                .setImage({ src, alt: asset.originalName })
+                .run();
+              toast.success("Изображение добавлено");
+              setAssetPickerOpen(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

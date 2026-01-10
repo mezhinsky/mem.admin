@@ -11,6 +11,7 @@ import {
   Settings2,
   SquareTerminal,
   TableOfContents,
+  Files,
 } from "lucide-react";
 
 import { NavProjects } from "@/components/nav-projects";
@@ -145,6 +146,16 @@ const data = {
       items: [
         { name: "Создать пост", url: "articles/new", icon: Pen },
         { name: "Все посты", url: "articles", icon: TableOfContents },
+      ],
+    },
+
+    {
+      name: "Файлы",
+      url: "assets",
+      icon: Files,
+      items: [
+        { name: "Загрузить файл", url: "assets/new", icon: Files },
+        { name: "Все файлы", url: "assets", icon: Files },
       ],
     },
   ],
