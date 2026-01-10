@@ -2,6 +2,18 @@ import { apiUrl } from "@/lib/api";
 
 export type AssetType = "IMAGE" | "FILE";
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonObject
+  | JsonValue[];
+
+export type JsonObject = {
+  [key: string]: JsonValue;
+};
+
 export type Asset = {
   id: string;
   type: AssetType;
@@ -11,7 +23,7 @@ export type Asset = {
   originalName: string;
   mimeType: string;
   size: number;
-  metadata: any;
+  metadata: JsonObject | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -76,7 +88,7 @@ export async function deleteAsset(id: string): Promise<Asset> {
 
 export async function updateAsset(
   id: string,
-  payload: { originalName?: string; metadata?: any }
+  payload: { originalName?: string; metadata?: JsonObject | null }
 ): Promise<Asset> {
   const res = await fetch(apiUrl(`/assets/${id}`), {
     method: "PATCH",
@@ -88,4 +100,3 @@ export async function updateAsset(
   }
   return res.json();
 }
-

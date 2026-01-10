@@ -23,6 +23,7 @@ import {
   listAssets,
   type AssetType,
   type Asset,
+  type JsonObject,
   uploadAsset,
 } from "@/lib/assets-api";
 import {
@@ -42,11 +43,25 @@ export type FileManagerProps = {
   className?: string;
 };
 
+function isJsonObject(value: unknown): value is JsonObject {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getStringProp(obj: JsonObject, key: string): string | null {
+  const value = obj[key];
+  return typeof value === "string" ? value : null;
+}
+
 function getThumbUrl(asset: Asset): string | null {
-  const variants = asset?.metadata?.variants;
-  if (!variants || typeof variants !== "object") return null;
+  const variantsValue = asset?.metadata?.variants;
+  if (!isJsonObject(variantsValue)) return null;
+
   return (
-    variants.thumb || variants.md || variants.lg || variants.original || null
+    getStringProp(variantsValue, "thumb") ||
+    getStringProp(variantsValue, "md") ||
+    getStringProp(variantsValue, "lg") ||
+    getStringProp(variantsValue, "original") ||
+    null
   );
 }
 

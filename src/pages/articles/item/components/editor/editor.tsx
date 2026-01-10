@@ -246,11 +246,28 @@ export default function AdminEditor({
               types={["IMAGE"]}
               accept="image/*"
               onPick={(asset) => {
-                const variants = asset?.metadata?.variants;
+                const variantsValue = asset?.metadata?.variants;
+                const variants =
+                  variantsValue &&
+                  typeof variantsValue === "object" &&
+                  !Array.isArray(variantsValue)
+                    ? variantsValue
+                    : null;
+
                 const src =
-                  variants?.lg ||
-                  variants?.md ||
-                  variants?.original ||
+                  (variants &&
+                  typeof (variants as Record<string, unknown>)["lg"] === "string"
+                    ? ((variants as Record<string, unknown>)["lg"] as string)
+                    : null) ||
+                  (variants &&
+                  typeof (variants as Record<string, unknown>)["md"] === "string"
+                    ? ((variants as Record<string, unknown>)["md"] as string)
+                    : null) ||
+                  (variants &&
+                  typeof (variants as Record<string, unknown>)["original"] ===
+                    "string"
+                    ? ((variants as Record<string, unknown>)["original"] as string)
+                    : null) ||
                   asset.url;
                 editor
                   .chain()
