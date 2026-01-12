@@ -7,53 +7,93 @@ import {
 } from "react";
 import { createRoot } from "react-dom/client";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Outlet,
+} from "react-router-dom";
 import RootLayout from "./layouts/RootLayout";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+import { AuthProvider } from "@/lib/auth";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Toaster } from "@/components/ui/sonner";
 
 import "./index.css";
 
+// Lazy load pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Articles = lazy(() => import("./pages/articles/list/page"));
 const Article = lazy(() => import("./pages/articles/item/page"));
 const ArticleCreate = lazy(() => import("./pages/articles/new/page"));
-
 const Assets = lazy(() => import("./pages/assets/page"));
+
+// Auth pages (not lazy loaded for faster initial load)
+const LoginPage = lazy(() => import("./pages/login/page"));
+const AuthCallback = lazy(() => import("./pages/auth/callback"));
 
 const withSuspense = (Component: LazyExoticComponent<ComponentType>) => (
   <Suspense
-    fallback={<div className="p-4 text-muted-foreground">Загрузка...</div>}
+    fallback={<div className="p-4 text-muted-foreground">Loading...</div>}
   >
     <Component />
   </Suspense>
 );
 
+/**
+ * Auth wrapper component that provides AuthProvider with router context
+ */
+function AuthWrapper() {
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  );
+}
+
+/**
+ * Protected layout that requires authentication
+ */
+function ProtectedLayout() {
+  return (
+    <RequireAuth>
+      <RootLayout />
+    </RequireAuth>
+  );
+}
+
 const router = createBrowserRouter([
   {
-    path: "/",
-    element: <RootLayout />,
+    // Wrap all routes with AuthProvider
+    element: <AuthWrapper />,
     children: [
-      { path: "/", element: withSuspense(Dashboard) },
-      { path: "/articles", element: withSuspense(Articles) },
-      { path: "/articles/new", element: withSuspense(ArticleCreate) },
-      { path: "/articles/:id", element: withSuspense(Article) },
+      // Public routes (no auth required)
+      { path: "/login", element: withSuspense(LoginPage) },
+      { path: "/auth/callback", element: withSuspense(AuthCallback) },
 
-      { path: "/assets", element: withSuspense(Assets) },
+      // Protected routes (require authentication)
+      {
+        element: <ProtectedLayout />,
+        children: [
+          { path: "/", element: withSuspense(Dashboard) },
+          { path: "/articles", element: withSuspense(Articles) },
+          { path: "/articles/new", element: withSuspense(ArticleCreate) },
+          { path: "/articles/:id", element: withSuspense(Article) },
+          { path: "/assets", element: withSuspense(Assets) },
+        ],
+      },
     ],
   },
 ]);
 
-// Общие настройки кэша и стейла — можно корректировать под себя
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1, // одна попытка повторить при ошибке
+      retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 30_000, // 30с считаем данные свежими
+      staleTime: 30_000,
     },
     mutations: {
       retry: 0,
