@@ -29,6 +29,7 @@ const Articles = lazy(() => import("./pages/articles/list/page"));
 const Article = lazy(() => import("./pages/articles/item/page"));
 const ArticleCreate = lazy(() => import("./pages/articles/new/page"));
 const Assets = lazy(() => import("./pages/assets/page"));
+const Users = lazy(() => import("./pages/users/list/page"));
 
 // Auth pages (not lazy loaded for faster initial load)
 const LoginPage = lazy(() => import("./pages/login/page"));
@@ -82,6 +83,7 @@ const router = createBrowserRouter([
           { path: "/articles/new", element: withSuspense(ArticleCreate) },
           { path: "/articles/:id", element: withSuspense(Article) },
           { path: "/assets", element: withSuspense(Assets) },
+          { path: "/users", element: withSuspense(Users) },
         ],
       },
     ],
