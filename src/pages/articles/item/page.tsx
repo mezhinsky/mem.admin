@@ -7,6 +7,7 @@ import ArticleForm, {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
+import { articlesApi, type UpdateArticleDto } from "@/lib/articles-api";
 
 const ArticleEditor = lazy(
   () => import("@/pages/articles/item/components/editor/editor")
@@ -22,31 +23,14 @@ export default function DemoPage() {
   // Загружаем статью
   const { data: article, isLoading } = useQuery({
     queryKey: ["article", id],
-    queryFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/articles/${id}`
-      );
-      if (!res.ok) throw new Error("Ошибка загрузки статьи");
-      return res.json();
-    },
+    queryFn: () => articlesApi.getById(id!),
     enabled: !!id,
   });
 
   const queryClient = useQueryClient();
   // Мутация сохранения
   const updateMutation = useMutation({
-    mutationFn: async (payload) => {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/articles/${id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-      if (!res.ok) throw new Error("Ошибка сохранения статьи");
-      return res.json();
-    },
+    mutationFn: (payload: UpdateArticleDto) => articlesApi.update(id!, payload),
     onSuccess: (updated) => {
       console.log("✅ Статья успешно сохранена");
       queryClient.invalidateQueries({ queryKey: ["article", id] });

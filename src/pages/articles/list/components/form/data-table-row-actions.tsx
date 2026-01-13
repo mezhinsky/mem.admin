@@ -8,13 +8,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  // DropdownMenuRadioGroup,
-  // DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  // DropdownMenuSub,
-  // DropdownMenuSubContent,
-  // DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -33,6 +28,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { articlesApi } from "@/lib/articles-api";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -47,18 +43,7 @@ export function DataTableRowActions<TData extends { id: number }>({
   const article = row.original;
 
   const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/articles/${article.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (!res.ok) {
-        throw new Error("Не удалось удалить статью");
-      }
-      return res.json();
-    },
+    mutationFn: () => articlesApi.delete(article.id),
     onSuccess: () => {
       setIsDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["articles"] });

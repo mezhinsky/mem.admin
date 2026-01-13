@@ -8,6 +8,7 @@ import ArticleForm, {
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { articlesApi, type CreateArticleDto } from "@/lib/articles-api";
 
 const ArticleEditor = lazy(
   () => import("@/pages/articles/item/components/editor/editor")
@@ -28,19 +29,7 @@ export default function Page() {
   }, [setBreadcrumbPage]);
 
   const createMutation = useMutation({
-    mutationFn: async (payload: unknown) => {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/articles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error("Не удалось создать статью");
-      }
-
-      return res.json();
-    },
+    mutationFn: (payload: CreateArticleDto) => articlesApi.create(payload),
     onSuccess: (created) => {
       formRef.current?.reset({
         title: "",

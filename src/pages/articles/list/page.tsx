@@ -10,42 +10,29 @@ import type {
   SortingState,
 } from "@tanstack/react-table";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
+import { articlesApi } from "@/lib/articles-api";
 
 export default function DemoPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // 🔹 Получаем параметры из URL
+  // Получаем параметры из URL
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("limit")) || 10;
   const sortBy = searchParams.get("sortBy") || "createdAt";
-  const order = searchParams.get("order") || "desc";
+  const order = (searchParams.get("order") || "desc") as "asc" | "desc";
   const search = searchParams.get("search") || "";
 
-  // 🔹 Формируем queryKey — зависит от параметров
+  // Формируем queryKey — зависит от параметров
   const queryKey = useMemo(
     () => ["articles", { page, limit, sortBy, order, search }],
     [page, limit, sortBy, order, search]
   );
 
-  // 🔹 Загружаем данные
+  // Загружаем данные
   const { data, isLoading } = useQuery({
     queryKey,
-    queryFn: async () => {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-        sortBy,
-        order,
-        ...(search ? { search } : {}),
-      });
-
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/articles?${params}`
-      );
-      if (!res.ok) throw new Error("Ошибка загрузки статей");
-      return res.json();
-    },
-    placeholderData: (prev: unknown) => prev, // 👈 заменяет keepPreviousData
+    queryFn: () => articlesApi.getAll({ page, limit, sortBy, order, search: search || undefined }),
+    placeholderData: (prev) => prev,
   });
 
   // 🔹 Обработчики изменения фильтров / сортировки / страниц
