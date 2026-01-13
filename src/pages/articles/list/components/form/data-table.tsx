@@ -39,9 +39,11 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+interface DataTableProps {
+  // Keep the table flexible: columns can be demo/synthetic types, while
+  // backend data can contain nulls/extra fields. We only need runtime shape.
+  columns: ColumnDef<any, any>[];
+  data: any[];
   page: number;
   totalPages: number;
   limit: number;
@@ -57,7 +59,7 @@ interface DataTableProps<TData, TValue> {
   ) => void;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable({
   columns,
   data,
   page,
@@ -71,7 +73,7 @@ export function DataTable<TData, TValue>({
   onSortingChange,
   onFiltersChange,
   onRowSelectionChange,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps) {
   // const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});

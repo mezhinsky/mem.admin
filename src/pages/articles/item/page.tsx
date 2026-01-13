@@ -15,7 +15,7 @@ const ArticleEditor = lazy(
 
 export default function DemoPage() {
   const { id } = useParams();
-  const [content, setContent] = useState(null);
+  const [content, setContent] = useState<unknown | null>(null);
   const formRef = useRef<ArticleFormHandle>(null);
 
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
@@ -39,7 +39,7 @@ export default function DemoPage() {
         formRef.current.reset({
           title: updated.title,
           slug: updated.slug ?? "",
-          description: updated.description,
+          description: updated.description ?? "",
           published: updated.published,
           thumbnailAssetId: updated.thumbnailAssetId ?? undefined,
           ogImageAssetId: updated.ogImageAssetId ?? undefined,
@@ -68,7 +68,7 @@ export default function DemoPage() {
       formRef.current.reset({
         title: article.title,
         slug: article.slug ?? "",
-        description: article.description,
+        description: article.description ?? "",
         published: article.published,
         thumbnailAssetId: article.thumbnailAssetId ?? undefined,
         ogImageAssetId: article.ogImageAssetId ?? undefined,
@@ -86,11 +86,19 @@ export default function DemoPage() {
     const formValues = formRef.current?.getValues();
     if (!formValues) return;
 
-    updateMutation.mutate({
-      ...article,
-      ...formValues,
-      content,
-    });
+    const payload: UpdateArticleDto = {
+      title: formValues.title,
+      slug: formValues.slug,
+      description: formValues.description?.trim()
+        ? formValues.description
+        : undefined,
+      published: formValues.published,
+      thumbnailAssetId: formValues.thumbnailAssetId || undefined,
+      ogImageAssetId: formValues.ogImageAssetId || undefined,
+      content: content ?? undefined,
+    };
+
+    updateMutation.mutate(payload);
   };
 
   return (

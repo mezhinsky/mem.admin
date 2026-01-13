@@ -31,7 +31,14 @@ export default function DemoPage() {
   // Загружаем данные
   const { data, isLoading } = useQuery({
     queryKey,
-    queryFn: () => articlesApi.getAll({ page, limit, sortBy, order, search: search || undefined }),
+    queryFn: () =>
+      articlesApi.getAll({
+        page,
+        limit,
+        sortBy,
+        order,
+        search: search || undefined,
+      }),
     placeholderData: (prev) => prev,
   });
 
@@ -94,9 +101,9 @@ export default function DemoPage() {
   return (
     <div className="container mx-auto p-4 space-y-4">
       <MMTable
-        data={data.items}
+        data={data ? data.items.map(item => ({ ...item, name: item.title })) : []}
         page={page}
-        totalPages={data.totalPages}
+        totalPages={data ? data.totalPages : 0}
         limit={limit}
         columns={columns}
         sorting={sorting}

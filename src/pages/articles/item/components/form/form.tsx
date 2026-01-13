@@ -53,8 +53,18 @@ export type ArticleFormHandle = {
   reset: (data?: Partial<ArticleFormValues>) => void;
 };
 
+type ArticleFormInput = Omit<
+  Partial<ArticleFormValues>,
+  "slug" | "description" | "thumbnailAssetId" | "ogImageAssetId"
+> & {
+  slug?: string | null;
+  description?: string | null;
+  thumbnailAssetId?: string | null;
+  ogImageAssetId?: string | null;
+};
+
 interface ArticleFormProps {
-  data?: Partial<ArticleFormValues>;
+  data?: ArticleFormInput;
   onSubmit?: (values: ArticleFormValues) => void;
   formId?: string;
 }
@@ -85,12 +95,12 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
     const form = useForm<ArticleFormValues>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        title: data?.title || "",
-        slug: data?.slug || "",
-        description: data?.description || "",
+        title: data?.title ?? "",
+        slug: data?.slug ?? "",
+        description: data?.description ?? "",
         published: data?.published ?? false,
-        thumbnailAssetId: data?.thumbnailAssetId,
-        ogImageAssetId: data?.ogImageAssetId,
+        thumbnailAssetId: data?.thumbnailAssetId ?? undefined,
+        ogImageAssetId: data?.ogImageAssetId ?? undefined,
       },
     });
 
@@ -114,12 +124,12 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
     useEffect(() => {
       if (data) {
         form.reset({
-          title: data?.title || "",
-          slug: data?.slug || "",
-          description: data?.description || "",
+          title: data?.title ?? "",
+          slug: data?.slug ?? "",
+          description: data?.description ?? "",
           published: data?.published ?? false,
-          thumbnailAssetId: data?.thumbnailAssetId,
-          ogImageAssetId: data?.ogImageAssetId,
+          thumbnailAssetId: data?.thumbnailAssetId ?? undefined,
+          ogImageAssetId: data?.ogImageAssetId ?? undefined,
         });
       }
     }, [data, form]);
