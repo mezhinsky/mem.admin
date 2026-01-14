@@ -17,7 +17,7 @@ export interface CreateTagDto {
   slug: string;
 }
 
-export interface UpdateTagDto extends Partial<CreateTagDto> {}
+export type UpdateTagDto = Partial<CreateTagDto>;
 
 export const tagsApi = {
   getAll: async (params: TagsQueryParams = {}): Promise<Tag[]> => {
