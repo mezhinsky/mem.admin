@@ -42,6 +42,7 @@ const formSchema = z.object({
     }),
   description: z.string().optional(),
   published: z.boolean(),
+  weight: z.number().min(1).max(3),
   thumbnailAssetId: z.string().optional(),
   ogImageAssetId: z.string().optional(),
 });
@@ -56,12 +57,13 @@ export type ArticleFormHandle = {
 
 type ArticleFormInput = Omit<
   Partial<ArticleFormValues>,
-  "slug" | "description" | "thumbnailAssetId" | "ogImageAssetId"
+  "slug" | "description" | "thumbnailAssetId" | "ogImageAssetId" | "weight"
 > & {
   slug?: string | null;
   description?: string | null;
   thumbnailAssetId?: string | null;
   ogImageAssetId?: string | null;
+  weight?: number | null;
 };
 
 interface ArticleFormProps {
@@ -100,6 +102,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
         slug: data?.slug ?? "",
         description: data?.description ?? "",
         published: data?.published ?? false,
+        weight: data?.weight ?? 1,
         thumbnailAssetId: data?.thumbnailAssetId ?? undefined,
         ogImageAssetId: data?.ogImageAssetId ?? undefined,
       },
@@ -129,6 +132,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
           slug: data?.slug ?? "",
           description: data?.description ?? "",
           published: data?.published ?? false,
+          weight: data?.weight ?? 1,
           thumbnailAssetId: data?.thumbnailAssetId ?? undefined,
           ogImageAssetId: data?.ogImageAssetId ?? undefined,
         });
@@ -230,6 +234,48 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="weight"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ширина карточки</FormLabel>
+                  <FormControl>
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map((w) => (
+                        <Button
+                          key={w}
+                          type="button"
+                          variant={field.value === w ? "default" : "outline"}
+                          className="flex-1"
+                          onClick={() => field.onChange(w)}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="inline-flex gap-0.5"
+                              aria-hidden="true"
+                            >
+                              {Array.from({ length: w }).map((_, i) => (
+                                <span
+                                  key={i}
+                                  className="w-3 h-4 rounded-sm bg-current opacity-60"
+                                />
+                              ))}
+                            </span>
+                            <span>{w}</span>
+                          </span>
+                        </Button>
+                      ))}
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Сколько колонок занимает карточка в сетке (1-3).
+                  </FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />
