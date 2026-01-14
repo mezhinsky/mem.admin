@@ -172,9 +172,7 @@ const data = {
       name: "Пользователи",
       url: "users",
       icon: Users,
-      items: [
-        { name: "Все пользователи", url: "users", icon: Users },
-      ],
+      items: [{ name: "Все пользователи", url: "users", icon: Users }],
     },
   ],
 };

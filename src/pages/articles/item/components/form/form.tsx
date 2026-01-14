@@ -115,10 +115,11 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
     const [tagsPopoverOpen, setTagsPopoverOpen] = useState(false);
 
     // Загружаем все теги для выбора
-    const { data: allTags = [] } = useQuery({
-      queryKey: ["tags"],
-      queryFn: () => tagsApi.getAll(),
+    const { data: tagsData } = useQuery({
+      queryKey: ["tags", "all"],
+      queryFn: () => tagsApi.getAll({ limit: 100 }),
     });
+    const allTags = tagsData?.items ?? [];
 
     const form = useForm<ArticleFormValues>({
       resolver: zodResolver(formSchema),

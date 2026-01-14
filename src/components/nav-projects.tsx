@@ -32,7 +32,7 @@ export function NavProjects({ projects }: { projects: Project[] }) {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      {/* <SidebarGroupLabel>Словари</SidebarGroupLabel> */}
       <SidebarMenu>
         {projects.map((item) => {
           const ItemIcon = item.icon ?? Folder;

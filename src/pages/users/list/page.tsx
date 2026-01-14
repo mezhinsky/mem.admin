@@ -28,7 +28,10 @@ export default function UsersPage() {
 
   // Build query key
   const queryKey = useMemo(
-    () => ["users", { page, limit, sortBy, order, search, roleFilter, activeFilter }],
+    () => [
+      "users",
+      { page, limit, sortBy, order, search, roleFilter, activeFilter },
+    ],
     [page, limit, sortBy, order, search, roleFilter, activeFilter]
   );
 
@@ -121,14 +124,14 @@ export default function UsersPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Пользователи</h1>
           <p className="text-muted-foreground">
             Управление пользователями и их правами
           </p>
         </div>
-      </div>
+      </div> */}
 
       <DataTable
         data={data?.users || []}

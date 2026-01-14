@@ -22,14 +22,18 @@ export default function TagsPage() {
   const search = searchParams.get("search") || "";
 
   const queryKey = useMemo(
-    () => ["tags", { search }],
-    [search]
+    () => ["tags", { page, limit, sortBy, order, search }],
+    [page, limit, sortBy, order, search]
   );
 
   const { data, isLoading } = useQuery({
     queryKey,
     queryFn: () =>
       tagsApi.getAll({
+        page,
+        limit,
+        sortBy,
+        order,
         search: search || undefined,
       }),
     placeholderData: (prev) => prev,
@@ -47,7 +51,7 @@ export default function TagsPage() {
 
   const handleSortChange = (field: string, dir: "asc" | "desc") => {
     setSearchParams({
-      page: String(page),
+      page: "1",
       limit: String(limit),
       sortBy: field,
       order: dir,
@@ -85,28 +89,16 @@ export default function TagsPage() {
     ]);
   }, [setBreadcrumbPage]);
 
-  // Клиентская пагинация (т.к. API возвращает все теги)
-  const paginatedData = useMemo(() => {
-    if (!data) return [];
-    const start = (page - 1) * limit;
-    return data.slice(start, start + limit);
-  }, [data, page, limit]);
-
-  const totalPages = useMemo(() => {
-    if (!data) return 0;
-    return Math.ceil(data.length / limit);
-  }, [data, limit]);
-
-  if (isLoading) {
+  if (isLoading && !data) {
     return <div className="p-6 text-muted-foreground">Загрузка...</div>;
   }
 
   return (
     <div className="container mx-auto p-4 space-y-4">
       <DataTable
-        data={paginatedData}
+        data={data?.items || []}
         page={page}
-        totalPages={totalPages}
+        totalPages={data?.totalPages || 0}
         limit={limit}
         columns={columns}
         sorting={sorting}
