@@ -3,6 +3,7 @@
 import type { Row } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, UserX, UserCheck, Shield, ShieldOff } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -12,6 +13,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -27,7 +29,6 @@ import {
 
 import type { User } from "@/lib/users-api";
 import { usersApi } from "@/lib/users-api";
-import { EditUserSheet } from "./edit-user-sheet";
 
 interface DataTableRowActionsProps {
   row: Row<User>;
@@ -35,8 +36,8 @@ interface DataTableRowActionsProps {
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const user = row.original;
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
   const [isToggleRoleOpen, setIsToggleRoleOpen] = useState(false);
 
@@ -87,7 +88,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[180px]">
-          <DropdownMenuItem onSelect={() => setIsEditOpen(true)}>
+          <DropdownMenuItem onSelect={() => navigate(`/users/${user.id}`)}>
             <Pencil className="mr-2 h-4 w-4" />
             Редактировать
           </DropdownMenuItem>
@@ -114,6 +115,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               <>
                 <UserX className="mr-2 h-4 w-4" />
                 Заблокировать
+                <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
               </>
             ) : (
               <>
@@ -124,12 +126,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <EditUserSheet
-        user={user}
-        open={isEditOpen}
-        onOpenChange={setIsEditOpen}
-      />
 
       <AlertDialog open={isDeactivateOpen} onOpenChange={setIsDeactivateOpen}>
         <AlertDialogContent>

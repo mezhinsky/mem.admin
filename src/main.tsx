@@ -33,6 +33,7 @@ const Tag = lazy(() => import("./pages/tags/item/page"));
 const TagCreate = lazy(() => import("./pages/tags/new/page"));
 const Assets = lazy(() => import("./pages/assets/page"));
 const Users = lazy(() => import("./pages/users/list/page"));
+const User = lazy(() => import("./pages/users/item/page"));
 
 // Auth pages (not lazy loaded for faster initial load)
 const LoginPage = lazy(() => import("./pages/login/page"));
@@ -90,6 +91,7 @@ const router = createBrowserRouter([
           { path: "/tags/:id", element: withSuspense(Tag) },
           { path: "/assets", element: withSuspense(Assets) },
           { path: "/users", element: withSuspense(Users) },
+          { path: "/users/:id", element: withSuspense(User) },
         ],
       },
     ],
