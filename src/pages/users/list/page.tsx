@@ -7,11 +7,10 @@ import type {
   SortingState,
 } from "@tanstack/react-table";
 
-import { DataTable } from "@/components/data-table";
+import { DataTable } from "./components/form/data-table";
+import { columns } from "./components/form/columns";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
-import { columns } from "./columns";
-import { UsersToolbar } from "./toolbar";
-import { usersApi, type Role, type User } from "@/lib/users-api";
+import { usersApi, type Role } from "@/lib/users-api";
 
 export default function UsersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -131,7 +130,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      <DataTable<User, unknown>
+      <DataTable
         data={data?.users || []}
         page={page}
         totalPages={totalPages}
@@ -145,17 +144,12 @@ export default function UsersPage() {
         onSortingChange={handleSortChange}
         onFiltersChange={() => {}}
         onRowSelectionChange={setRowSelection}
-        toolbar={(table) => (
-          <UsersToolbar
-            table={table}
-            search={search}
-            onSearchChange={handleSearchChange}
-            roleFilter={roleFilter}
-            onRoleFilterChange={handleRoleFilterChange}
-            activeFilter={activeFilter}
-            onActiveFilterChange={handleActiveFilterChange}
-          />
-        )}
+        search={search}
+        onSearchChange={handleSearchChange}
+        roleFilter={roleFilter}
+        onRoleFilterChange={handleRoleFilterChange}
+        activeFilter={activeFilter}
+        onActiveFilterChange={handleActiveFilterChange}
       />
     </div>
   );

@@ -12,11 +12,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DataTableViewOptions } from "@/components/data-table";
-import type { User, Role } from "@/lib/users-api";
+import { DataTableViewOptions } from "./data-table-view-options";
+import type { Role } from "@/lib/users-api";
 
-interface UsersToolbarProps {
-  table: Table<User>;
+interface DataTableToolbarProps<TData> {
+  table: Table<TData>;
   search: string;
   onSearchChange: (search: string) => void;
   roleFilter: Role | undefined;
@@ -25,7 +25,7 @@ interface UsersToolbarProps {
   onActiveFilterChange: (isActive: boolean | undefined) => void;
 }
 
-export function UsersToolbar({
+export function DataTableToolbar<TData>({
   table,
   search,
   onSearchChange,
@@ -33,7 +33,7 @@ export function UsersToolbar({
   onRoleFilterChange,
   activeFilter,
   onActiveFilterChange,
-}: UsersToolbarProps) {
+}: DataTableToolbarProps<TData>) {
   const hasFilters = search || roleFilter || activeFilter !== undefined;
 
   const clearFilters = () => {

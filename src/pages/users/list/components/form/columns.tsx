@@ -12,10 +12,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DataTableColumnHeader } from "@/components/data-table";
+import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableRowActions } from "./data-table-row-actions";
 import type { User } from "@/lib/users-api";
 import { formatDate } from "@/lib/formatDate";
-import { UserRowActions } from "./row-actions";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -155,6 +155,6 @@ export const columns: ColumnDef<User>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <UserRowActions user={row.original} />,
+    cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];

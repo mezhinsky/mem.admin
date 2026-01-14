@@ -1,8 +1,10 @@
 "use client";
 
+import type { Row } from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, UserX, UserCheck, Shield, ShieldOff } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,17 +24,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
 
 import type { User } from "@/lib/users-api";
 import { usersApi } from "@/lib/users-api";
 import { EditUserSheet } from "./edit-user-sheet";
 
-interface UserRowActionsProps {
-  user: User;
+interface DataTableRowActionsProps {
+  row: Row<User>;
 }
 
-export function UserRowActions({ user }: UserRowActionsProps) {
+export function DataTableRowActions({ row }: DataTableRowActionsProps) {
+  const user = row.original;
   const queryClient = useQueryClient();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeactivateOpen, setIsDeactivateOpen] = useState(false);
@@ -123,14 +125,12 @@ export function UserRowActions({ user }: UserRowActionsProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Edit Sheet */}
       <EditUserSheet
         user={user}
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
       />
 
-      {/* Deactivate Dialog */}
       <AlertDialog open={isDeactivateOpen} onOpenChange={setIsDeactivateOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -159,7 +159,6 @@ export function UserRowActions({ user }: UserRowActionsProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Toggle Role Dialog */}
       <AlertDialog open={isToggleRoleOpen} onOpenChange={setIsToggleRoleOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
