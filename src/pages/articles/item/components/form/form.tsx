@@ -3,6 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
+import { ImageIcon, X } from "lucide-react";
 
 import {
   Form,
@@ -237,34 +238,13 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
               control={form.control}
               name="thumbnailAssetId"
               render={({ field }) => (
-                <div className="test">
+                <div>
                   <FormLabel>Thumbnail</FormLabel>
-                  <FormControl>
-                    <div className="">
-                      <div className="">
-                        <Input
-                          placeholder="asset id"
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                        />
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => setThumbnailPickerOpen(true)}
-                        >
-                          Выбрать
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => field.onChange(undefined)}
-                        >
-                          Очистить
-                        </Button>
-                      </div>
-                      {thumbnailAsset && (
-                        <div className="flex items-center gap-3 rounded-md border p-3">
-                          <div className="h-16 w-16 overflow-hidden rounded-md border bg-muted">
+                  <FormControl className="py-2">
+                    <div className="space-y-3">
+                      {thumbnailAsset ? (
+                        <div className="flex flex-col items-center gap-2 rounded-lg border p-3 w-full">
+                          <div className="h-60 w-60 shrink-0 overflow-hidden rounded-md border bg-muted">
                             <img
                               src={
                                 getVariantUrl(thumbnailAsset) ??
@@ -275,14 +255,35 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                               loading="lazy"
                             />
                           </div>
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-medium">
-                              {thumbnailAsset.originalName}
-                            </div>
-                            <div className="truncate text-xs text-muted-foreground">
-                              {thumbnailAsset.url}
-                            </div>
+                          <div className="flex shrink-0 gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => setThumbnailPickerOpen(true)}
+                            >
+                              <ImageIcon className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => field.onChange(undefined)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                          onClick={() => setThumbnailPickerOpen(true)}
+                        >
+                          <ImageIcon className="h-8 w-8" />
+                          <span className="text-sm font-medium">
+                            Выбрать изображение
+                          </span>
                         </div>
                       )}
                     </div>
@@ -301,32 +302,11 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
               render={({ field }) => (
                 <div>
                   <FormLabel>OG Image</FormLabel>
-                  <FormControl>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="asset id"
-                          value={field.value ?? ""}
-                          onChange={field.onChange}
-                        />
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => setOgPickerOpen(true)}
-                        >
-                          Выбрать
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => field.onChange(undefined)}
-                        >
-                          Очистить
-                        </Button>
-                      </div>
-                      {ogAsset && (
-                        <div className="flex items-center gap-3 rounded-md border p-3">
-                          <div className="h-16 w-16 overflow-hidden rounded-md border bg-muted">
+                  <FormControl className="py-2">
+                    <div className="space-y-3">
+                      {ogAsset ? (
+                        <div className="flex flex-col items-center gap-2 rounded-lg border p-3 w-full">
+                          <div className="h-60 w-60 shrink-0 overflow-hidden rounded-md border bg-muted">
                             <img
                               src={getVariantUrl(ogAsset) ?? ogAsset.url}
                               alt={ogAsset.originalName}
@@ -334,14 +314,36 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                               loading="lazy"
                             />
                           </div>
-                          <div className="min-w-0">
-                            <div className="truncate text-sm font-medium">
-                              {ogAsset.originalName}
-                            </div>
-                            <div className="truncate text-xs text-muted-foreground">
-                              {ogAsset.url}
-                            </div>
+                          <div className="flex shrink-0 gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setOgPickerOpen(true)}
+                            >
+                              <ImageIcon className="mr-1.5 h-4 w-4" />
+                              Заменить
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => field.onChange(undefined)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                          onClick={() => setOgPickerOpen(true)}
+                        >
+                          <ImageIcon className="h-8 w-8" />
+                          <span className="text-sm font-medium">
+                            Выбрать изображение
+                          </span>
                         </div>
                       )}
                     </div>
