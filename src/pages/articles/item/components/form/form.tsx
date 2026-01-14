@@ -237,11 +237,11 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
               control={form.control}
               name="thumbnailAssetId"
               render={({ field }) => (
-                <FormItem>
+                <div className="test">
                   <FormLabel>Thumbnail</FormLabel>
                   <FormControl>
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-2">
+                    <div className="">
+                      <div className="">
                         <Input
                           placeholder="asset id"
                           value={field.value ?? ""}
@@ -291,7 +291,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                     Картинка для карточки/списка статей.
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
+                </div>
               )}
             />
 
@@ -299,7 +299,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
               control={form.control}
               name="ogImageAssetId"
               render={({ field }) => (
-                <FormItem>
+                <div>
                   <FormLabel>OG Image</FormLabel>
                   <FormControl>
                     <div className="flex flex-col gap-3">
@@ -350,7 +350,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                     Картинка для OpenGraph (шаринг в соцсетях).
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
+                </div>
               )}
             />
           </form>
