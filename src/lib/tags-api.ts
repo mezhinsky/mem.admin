@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-
 import { api } from "./api/client";
 
 export interface Tag {
@@ -11,7 +9,19 @@ export interface Tag {
 }
 
 export interface TagsQueryParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  order?: "asc" | "desc";
   search?: string;
+}
+
+export interface TagsListResponse {
+  items: Tag[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface CreateTagDto {
@@ -19,16 +29,20 @@ export interface CreateTagDto {
   slug: string;
 }
 
-export interface UpdateTagDto extends Partial<CreateTagDto> {}
+export type UpdateTagDto = Partial<CreateTagDto>;
 
 export const tagsApi = {
-  getAll: async (params: TagsQueryParams = {}): Promise<Tag[]> => {
+  getAll: async (params: TagsQueryParams = {}): Promise<TagsListResponse> => {
     const searchParams = new URLSearchParams();
 
+    if (params.page != null) searchParams.set("page", String(params.page));
+    if (params.limit != null) searchParams.set("limit", String(params.limit));
+    if (params.sortBy) searchParams.set("sortBy", params.sortBy);
+    if (params.order) searchParams.set("order", params.order);
     if (params.search) searchParams.set("search", params.search);
 
     const query = searchParams.toString();
-    return api.get<Tag[]>(`/tags${query ? `?${query}` : ""}`);
+    return api.get<TagsListResponse>(`/tags${query ? `?${query}` : ""}`);
   },
 
   getById: async (id: number | string): Promise<Tag> => {
