@@ -32,7 +32,7 @@ export default function DemoPage() {
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateArticleDto) => articlesApi.update(id!, payload),
     onSuccess: (updated) => {
-      console.log("✅ Статья успешно сохранена");
+      console.log("Статья успешно сохранена");
       queryClient.invalidateQueries({ queryKey: ["article", id] });
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       if (formRef.current) {
@@ -43,6 +43,7 @@ export default function DemoPage() {
           published: updated.published,
           thumbnailAssetId: updated.thumbnailAssetId ?? undefined,
           ogImageAssetId: updated.ogImageAssetId ?? undefined,
+          tagIds: updated.tags?.map((t) => t.id) ?? [],
         });
       }
       setContent(updated.content);
@@ -81,7 +82,7 @@ export default function DemoPage() {
   if (isLoading) return <p>Загрузка...</p>;
   if (!article) return <p>Статья не найдена</p>;
 
-  // 💾 Сохраняем всё сразу — и форму, и редактор
+  // Сохраняем всё сразу — и форму, и редактор
   const handleSave = () => {
     const formValues = formRef.current?.getValues();
     if (!formValues) return;
@@ -96,6 +97,7 @@ export default function DemoPage() {
       thumbnailAssetId: formValues.thumbnailAssetId || undefined,
       ogImageAssetId: formValues.ogImageAssetId || undefined,
       content: content ?? undefined,
+      tagIds: formValues.tagIds ?? [],
     };
 
     updateMutation.mutate(payload);

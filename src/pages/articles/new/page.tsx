@@ -38,9 +38,10 @@ export default function Page() {
         published: false,
         thumbnailAssetId: undefined,
         ogImageAssetId: undefined,
+        tagIds: [],
       });
       setContent(null);
-      toast.info("Event has been created.");
+      toast.success("Статья успешно создана");
       navigate(`/articles/${created.id}`);
     },
   });

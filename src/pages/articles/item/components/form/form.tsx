@@ -3,7 +3,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, X, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import {
   Form,
@@ -25,7 +26,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Badge } from "@/components/ui/badge";
 import { getAsset, type Asset, type JsonObject } from "@/lib/assets-api";
+import { tagsApi } from "@/lib/tags-api";
 
 // 🎯 схема валидации
 const formSchema = z.object({
@@ -45,6 +61,7 @@ const formSchema = z.object({
   weight: z.number().min(1).max(3),
   thumbnailAssetId: z.string().optional(),
   ogImageAssetId: z.string().optional(),
+  tagIds: z.array(z.number()).optional(),
 });
 
 export type ArticleFormValues = z.infer<typeof formSchema>;
@@ -57,13 +74,14 @@ export type ArticleFormHandle = {
 
 type ArticleFormInput = Omit<
   Partial<ArticleFormValues>,
-  "slug" | "description" | "thumbnailAssetId" | "ogImageAssetId" | "weight"
+  "slug" | "description" | "thumbnailAssetId" | "ogImageAssetId" | "weight" | "tagIds"
 > & {
   slug?: string | null;
   description?: string | null;
   thumbnailAssetId?: string | null;
   ogImageAssetId?: string | null;
   weight?: number | null;
+  tags?: { id: number; name: string; slug: string }[];
 };
 
 interface ArticleFormProps {
@@ -94,6 +112,13 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
   ({ data, onSubmit, formId = "article-form" }, ref) => {
     const [thumbnailPickerOpen, setThumbnailPickerOpen] = useState(false);
     const [ogPickerOpen, setOgPickerOpen] = useState(false);
+    const [tagsPopoverOpen, setTagsPopoverOpen] = useState(false);
+
+    // Загружаем все теги для выбора
+    const { data: allTags = [] } = useQuery({
+      queryKey: ["tags"],
+      queryFn: () => tagsApi.getAll(),
+    });
 
     const form = useForm<ArticleFormValues>({
       resolver: zodResolver(formSchema),
@@ -105,11 +130,13 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
         weight: data?.weight ?? 1,
         thumbnailAssetId: data?.thumbnailAssetId ?? undefined,
         ogImageAssetId: data?.ogImageAssetId ?? undefined,
+        tagIds: data?.tags?.map((t) => t.id) ?? [],
       },
     });
 
     const thumbnailAssetId = form.watch("thumbnailAssetId");
     const ogImageAssetId = form.watch("ogImageAssetId");
+    const selectedTagIds = form.watch("tagIds") ?? [];
 
     const { data: thumbnailAsset } = useQuery({
       queryKey: ["asset", thumbnailAssetId],
@@ -135,6 +162,7 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
           weight: data?.weight ?? 1,
           thumbnailAssetId: data?.thumbnailAssetId ?? undefined,
           ogImageAssetId: data?.ogImageAssetId ?? undefined,
+          tagIds: data?.tags?.map((t) => t.id) ?? [],
         });
       }
     }, [data, form]);
@@ -399,6 +427,97 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                   </FormDescription>
                   <FormMessage />
                 </div>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tagIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Теги</FormLabel>
+                  <FormControl>
+                    <Popover open={tagsPopoverOpen} onOpenChange={setTagsPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={tagsPopoverOpen}
+                          className="w-full justify-between h-auto min-h-10"
+                        >
+                          <div className="flex flex-wrap gap-1">
+                            {selectedTagIds.length > 0 ? (
+                              selectedTagIds.map((tagId) => {
+                                const tag = allTags.find((t) => t.id === tagId);
+                                return tag ? (
+                                  <Badge
+                                    key={tag.id}
+                                    variant="secondary"
+                                    className="mr-1"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      field.onChange(
+                                        selectedTagIds.filter((id) => id !== tagId)
+                                      );
+                                    }}
+                                  >
+                                    {tag.name}
+                                    <X className="ml-1 h-3 w-3 cursor-pointer" />
+                                  </Badge>
+                                ) : null;
+                              })
+                            ) : (
+                              <span className="text-muted-foreground">
+                                Выберите теги...
+                              </span>
+                            )}
+                          </div>
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Поиск тегов..." />
+                          <CommandList>
+                            <CommandEmpty>Теги не найдены.</CommandEmpty>
+                            <CommandGroup>
+                              {allTags.map((tag) => (
+                                <CommandItem
+                                  key={tag.id}
+                                  value={tag.name}
+                                  onSelect={() => {
+                                    const isSelected = selectedTagIds.includes(tag.id);
+                                    if (isSelected) {
+                                      field.onChange(
+                                        selectedTagIds.filter((id) => id !== tag.id)
+                                      );
+                                    } else {
+                                      field.onChange([...selectedTagIds, tag.id]);
+                                    }
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedTagIds.includes(tag.id)
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {tag.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </FormControl>
+                  <FormDescription>
+                    Выберите теги для группировки статьи.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
             />
           </form>

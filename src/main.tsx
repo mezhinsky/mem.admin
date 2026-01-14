@@ -28,6 +28,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Articles = lazy(() => import("./pages/articles/list/page"));
 const Article = lazy(() => import("./pages/articles/item/page"));
 const ArticleCreate = lazy(() => import("./pages/articles/new/page"));
+const Tags = lazy(() => import("./pages/tags/list/page"));
+const Tag = lazy(() => import("./pages/tags/item/page"));
+const TagCreate = lazy(() => import("./pages/tags/new/page"));
 const Assets = lazy(() => import("./pages/assets/page"));
 const Users = lazy(() => import("./pages/users/list/page"));
 
@@ -82,6 +85,9 @@ const router = createBrowserRouter([
           { path: "/articles", element: withSuspense(Articles) },
           { path: "/articles/new", element: withSuspense(ArticleCreate) },
           { path: "/articles/:id", element: withSuspense(Article) },
+          { path: "/tags", element: withSuspense(Tags) },
+          { path: "/tags/new", element: withSuspense(TagCreate) },
+          { path: "/tags/:id", element: withSuspense(Tag) },
           { path: "/assets", element: withSuspense(Assets) },
           { path: "/users", element: withSuspense(Users) },
         ],

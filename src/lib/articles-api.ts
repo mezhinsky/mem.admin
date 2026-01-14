@@ -1,5 +1,13 @@
 import { api } from "./api/client";
 
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Article {
   id: number;
   weight: number;
@@ -12,6 +20,7 @@ export interface Article {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+  tags?: Tag[];
 }
 
 export interface ArticlesListResponse {
@@ -39,6 +48,7 @@ export interface CreateArticleDto {
   ogImageAssetId?: string;
   published?: boolean;
   weight?: number;
+  tagIds?: number[];
 }
 
 export interface UpdateArticleDto extends Partial<CreateArticleDto> {

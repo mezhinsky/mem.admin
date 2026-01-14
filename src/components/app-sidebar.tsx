@@ -13,6 +13,7 @@ import {
   TableOfContents,
   Files,
   Users,
+  Tags,
 } from "lucide-react";
 
 import { NavProjects } from "@/components/nav-projects";
@@ -147,6 +148,15 @@ const data = {
       items: [
         { name: "Создать пост", url: "articles/new", icon: Pen },
         { name: "Все посты", url: "articles", icon: TableOfContents },
+      ],
+    },
+    {
+      name: "Теги",
+      url: "tags",
+      icon: Tags,
+      items: [
+        { name: "Создать тег", url: "tags/new", icon: Pen },
+        { name: "Все теги", url: "tags", icon: Tags },
       ],
     },
     {
