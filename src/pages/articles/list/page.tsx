@@ -101,7 +101,9 @@ export default function DemoPage() {
   return (
     <div className="container mx-auto p-4 space-y-4">
       <MMTable
-        data={data ? data.items.map(item => ({ ...item, name: item.title })) : []}
+        data={
+          data ? data.items.map((item) => ({ ...item, name: item.title })) : []
+        }
         page={page}
         totalPages={data ? data.totalPages : 0}
         limit={limit}
