@@ -174,6 +174,30 @@ const data = {
       icon: Users,
       items: [{ name: "Все пользователи", url: "users", icon: Users }],
     },
+    {
+      name: "Telegram каналы",
+      url: "channels",
+      icon: Bot,
+      items: [
+        { name: "Создать канал", url: "channels/new", icon: Pen },
+        { name: "Все каналы", url: "channels", icon: Bot },
+      ],
+    },
+    {
+      name: "Telegram публикации",
+      url: "tg-posts",
+      icon: TableOfContents,
+      items: [{ name: "Все публикации", url: "tg-posts", icon: TableOfContents }],
+    },
+    {
+      name: "Telegram правила",
+      url: "rules",
+      icon: Settings2,
+      items: [
+        { name: "Создать правило", url: "rules/new", icon: Pen },
+        { name: "Все правила", url: "rules", icon: Settings2 },
+      ],
+    },
   ],
 };
 

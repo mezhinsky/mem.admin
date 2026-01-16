@@ -37,6 +37,11 @@ const User = lazy(() => import("./pages/users/item/page"));
 const Channels = lazy(() => import("./pages/channels/list/page"));
 const Channel = lazy(() => import("./pages/channels/item/page"));
 const ChannelCreate = lazy(() => import("./pages/channels/new/page"));
+const Rules = lazy(() => import("./pages/rules/list/page"));
+const Rule = lazy(() => import("./pages/rules/item/page"));
+const RuleCreate = lazy(() => import("./pages/rules/new/page"));
+const TgPosts = lazy(() => import("./pages/posts/list/page"));
+const TgPost = lazy(() => import("./pages/posts/item/page"));
 
 // Auth pages (not lazy loaded for faster initial load)
 const LoginPage = lazy(() => import("./pages/login/page"));
@@ -98,6 +103,11 @@ const router = createBrowserRouter([
           { path: "/channels", element: withSuspense(Channels) },
           { path: "/channels/new", element: withSuspense(ChannelCreate) },
           { path: "/channels/:id", element: withSuspense(Channel) },
+          { path: "/rules", element: withSuspense(Rules) },
+          { path: "/rules/new", element: withSuspense(RuleCreate) },
+          { path: "/rules/:id", element: withSuspense(Rule) },
+          { path: "/tg-posts", element: withSuspense(TgPosts) },
+          { path: "/tg-posts/:id", element: withSuspense(TgPost) },
         ],
       },
     ],
