@@ -190,6 +190,12 @@ const data = {
       items: [{ name: "Все публикации", url: "tg-posts", icon: TableOfContents }],
     },
     {
+      name: "Telegram доставки",
+      url: "tg-deliveries",
+      icon: TableOfContents,
+      items: [{ name: "Все доставки", url: "tg-deliveries", icon: TableOfContents }],
+    },
+    {
       name: "Telegram правила",
       url: "rules",
       icon: Settings2,

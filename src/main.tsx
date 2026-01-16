@@ -42,6 +42,7 @@ const Rule = lazy(() => import("./pages/rules/item/page"));
 const RuleCreate = lazy(() => import("./pages/rules/new/page"));
 const TgPosts = lazy(() => import("./pages/posts/list/page"));
 const TgPost = lazy(() => import("./pages/posts/item/page"));
+const TgDeliveries = lazy(() => import("./pages/deliveries/list/page"));
 
 // Auth pages (not lazy loaded for faster initial load)
 const LoginPage = lazy(() => import("./pages/login/page"));
@@ -108,6 +109,7 @@ const router = createBrowserRouter([
           { path: "/rules/:id", element: withSuspense(Rule) },
           { path: "/tg-posts", element: withSuspense(TgPosts) },
           { path: "/tg-posts/:id", element: withSuspense(TgPost) },
+          { path: "/tg-deliveries", element: withSuspense(TgDeliveries) },
         ],
       },
     ],
