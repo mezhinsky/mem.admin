@@ -2,6 +2,23 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Build-time env (Docker/Vite)
+
+`mem.admin` is a Vite SPA, so `VITE_*` variables are embedded at build time (not at container runtime).
+
+- `VITE_API_BASE_URL` (required)
+- `VITE_PUBLIC_SITE_URL` (optional, e.g. `https://mezhinsky.me/`) or `VITE_FRONTEND_URL`
+- `VITE_TG_WEBHOOK_SECRET` (optional)
+
+Docker build example:
+
+```bash
+docker build \
+  --build-arg VITE_API_BASE_URL=https://api.example.com \
+  --build-arg VITE_PUBLIC_SITE_URL=https://mezhinsky.me/ \
+  -t mem.admin:latest .
+```
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
