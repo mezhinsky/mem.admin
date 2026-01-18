@@ -9,91 +9,26 @@ import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 import { articlesApi, type UpdateArticleDto } from "@/lib/articles-api";
 import { toast } from "sonner";
-import { tgEventsApi } from "@/lib/tg-events-api";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import FileManager from "@/components/file-manager/file-manager";
-import type { Asset, JsonObject } from "@/lib/assets-api";
-import { API_BASE_URL } from "@/lib/api";
-import { X } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { postsApi, type TgPost } from "@/lib/posts-api";
+import { formatDate } from "@/lib/formatDate";
+import { buildFrontendArticleUrl, getPublicSiteBaseUrl } from "@/lib/urls";
 
 const ArticleEditor = lazy(
   () => import("@/pages/articles/item/components/editor/editor")
 );
 
-function isJsonObject(value: unknown): value is JsonObject {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function getVariantUrl(asset: Asset): string | null {
-  const variantsValue = asset?.metadata?.variants;
-  if (!isJsonObject(variantsValue)) return null;
-  const variants = variantsValue as JsonObject;
-  const lg = variants["lg"];
-  const md = variants["md"];
-  const original = variants["original"];
-  if (typeof lg === "string") return lg;
-  if (typeof md === "string") return md;
-  if (typeof original === "string") return original;
-  return null;
-}
-
-function toAbsoluteHttpUrl(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  const base = new URL(API_BASE_URL, window.location.origin);
-
-  if (/^https?:\/\//i.test(trimmed)) {
-    try {
-      return new URL(trimmed).toString();
-    } catch {
-      return null;
-    }
-  }
-
-  // Resolve relative URLs against API base so `/api/...` stays on same host.
-  const normalized = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
-  try {
-    return new URL(normalized, base.origin).toString();
-  } catch {
-    return null;
-  }
-}
-
-function getTelegramMediaUrl(asset: Asset): string | null {
-  const variantsValue = asset?.metadata?.variants;
-  if (isJsonObject(variantsValue)) {
-    const variants = variantsValue as JsonObject;
-    const candidates = [
-      variants["original"],
-      variants["lg"],
-      variants["md"],
-      variants["thumb"],
-    ];
-    for (const candidate of candidates) {
-      if (typeof candidate !== "string") continue;
-      const url = toAbsoluteHttpUrl(candidate);
-      if (url) return url;
-    }
-  }
-
-  return toAbsoluteHttpUrl(asset.url);
-}
-
 export default function DemoPage() {
   const { id } = useParams();
   const [content, setContent] = useState<unknown | null>(null);
   const formRef = useRef<ArticleFormHandle>(null);
-  const [tgUrl, setTgUrl] = useState("");
-  const [tgMediaAssets, setTgMediaAssets] = useState<Asset[]>([]);
-  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [tgPostIdDraft, setTgPostIdDraft] = useState("");
 
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
 
@@ -105,6 +40,22 @@ export default function DemoPage() {
   });
 
   const queryClient = useQueryClient();
+  const syncTgPostUrlMutation = useMutation({
+    mutationFn: async (payload: { tgPostId: string; url: string }) => {
+      return postsApi.update(payload.tgPostId, {
+        url: payload.url,
+        createEditDeliveries: false,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tg-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["tg-post"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`TG: не удалось обновить URL: ${error.message}`);
+    },
+  });
+
   // Мутация сохранения
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateArticleDto) => articlesApi.update(id!, payload),
@@ -124,80 +75,62 @@ export default function DemoPage() {
         });
       }
       setContent(updated.content);
+      setTgPostIdDraft(updated.tgPostId ?? "");
+
+      const tgPostId = updated.tgPostId ?? "";
+      const slugOrId = updated.slug ?? updated.id;
+      const frontendUrl = buildFrontendArticleUrl(slugOrId);
+      if (tgPostId) {
+        if (!frontendUrl) {
+          const base = getPublicSiteBaseUrl();
+          toast.error(
+            base
+              ? "Не удалось собрать URL для frontend"
+              : "Не задан frontend URL (VITE_PUBLIC_SITE_URL / VITE_FRONTEND_URL)",
+          );
+        } else {
+          syncTgPostUrlMutation.mutate({ tgPostId, url: frontendUrl });
+        }
+      }
     },
     onError: (err) => {
       toast.error(`Ошибка: ${err.message}`);
     },
   });
 
-  const tgArticleId = useMemo(() => {
-    if (!article) return "";
-    return (article.slug?.trim() || String(article.id)).trim();
-  }, [article]);
-
-  const tgTitle = useMemo(() => {
-    return article?.title?.trim() ?? "";
-  }, [article]);
-
-  const tgExcerpt = useMemo(() => {
-    return article?.description?.trim() || undefined;
-  }, [article]);
-
-  const tgTags = useMemo(() => {
-    return (article?.tags ?? []).map((t) => t.slug).filter(Boolean);
-  }, [article]);
-
-  useEffect(() => {
-    if (!article) return;
-    setTgUrl("");
-    setTgMediaAssets([]);
-  }, [article?.id]);
-
-  const publishToTelegramMutation = useMutation({
-    mutationFn: async () => {
-      const url = tgUrl.trim();
-      if (!url) throw new Error("URL не может быть пустым");
-
-      const mapped = tgMediaAssets.map((a) => ({
-        id: a.id,
-        originalName: a.originalName,
-        url: getTelegramMediaUrl(a),
-      }));
-
-      const invalid = mapped.filter((x) => !x.url);
-      if (invalid.length) {
-        throw new Error(
-          `Некоторые assets не имеют валидного URL: ${invalid
-            .slice(0, 3)
-            .map((x) => x.originalName || x.id)
-            .join(", ")}`,
-        );
-      }
-
-      const mediaUrls = mapped
-        .map((x) => x.url)
-        .filter((u): u is string => Boolean(u));
-
-      return tgEventsApi.articlePublished({
-        articleId: tgArticleId,
-        title: tgTitle,
-        excerpt: tgExcerpt,
-        url,
-        mediaUrls: mediaUrls.length ? mediaUrls : undefined,
-        tags: tgTags,
-      });
-    },
-    onSuccess: (result) => {
-      toast.success(
-        `Отправлено в Telegram: deliveries=${result.deliveriesCreated}`,
-      );
-      queryClient.invalidateQueries({ queryKey: ["tg-posts"] });
-      queryClient.invalidateQueries({ queryKey: ["tg-deliveries"] });
-    },
-    onError: (err: Error) => {
-      toast.error(`Ошибка: ${err.message}`);
-    },
+  const { data: tgPostsPage } = useQuery({
+    queryKey: ["tg-posts", { page: 1, limit: 100, sortBy: "createdAt", order: "desc" }],
+    queryFn: () =>
+      postsApi.getAll({
+        page: 1,
+        limit: 100,
+        sortBy: "createdAt",
+        order: "desc",
+      }),
+    placeholderData: (prev) => prev,
   });
+
+  const tgPosts = useMemo(() => tgPostsPage?.data ?? [], [tgPostsPage]);
+
+  const { data: selectedTgPost } = useQuery<TgPost | null>({
+    queryKey: ["tg-post", tgPostIdDraft],
+    enabled: Boolean(tgPostIdDraft),
+    queryFn: async () => {
+      if (!tgPostIdDraft) return null;
+      try {
+        return await postsApi.getById(tgPostIdDraft);
+      } catch {
+        return null;
+      }
+    },
+    retry: 0,
+  });
+
+  const tgPostsForSelect = useMemo(() => {
+    if (!selectedTgPost) return tgPosts;
+    if (tgPosts.some((p) => p.id === selectedTgPost.id)) return tgPosts;
+    return [selectedTgPost, ...tgPosts];
+  }, [selectedTgPost, tgPosts]);
 
   useEffect(() => {
     setBreadcrumbPage([
@@ -223,6 +156,7 @@ export default function DemoPage() {
     }
 
     setContent(article.content);
+    setTgPostIdDraft(article.tgPostId ?? "");
   }, [article]);
 
   if (isLoading) return <p>Загрузка...</p>;
@@ -244,6 +178,7 @@ export default function DemoPage() {
       ogImageAssetId: formValues.ogImageAssetId || undefined,
       content: content ?? undefined,
       tagIds: formValues.tagIds ?? [],
+      tgPostId: tgPostIdDraft.trim() ? tgPostIdDraft.trim() : undefined,
     };
 
     updateMutation.mutate(payload);
@@ -252,7 +187,48 @@ export default function DemoPage() {
   return (
     <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
       {/* 🧾 Левая колонка — форма */}
-      <ArticleForm ref={formRef} data={article} />
+      <div className="space-y-6">
+        <ArticleForm ref={formRef} data={article} />
+
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="font-medium">Telegram</div>
+
+          <div className="space-y-1">
+            <div className="text-sm text-muted-foreground">tg post</div>
+            <Select
+              value={tgPostIdDraft || "none"}
+              onValueChange={(value) => {
+                if (value === "none") {
+                  setTgPostIdDraft("");
+                  return;
+                }
+                setTgPostIdDraft(value);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Не выбрано" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Не выбрано</SelectItem>
+                {tgPostsForSelect.map((p: TgPost) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.articleId} · {p.status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedTgPost ? (
+            <div className="text-sm text-muted-foreground">
+              Обновлен: {formatDate(selectedTgPost.updatedAt)} · Deliveries:{" "}
+              {selectedTgPost._count?.deliveries ??
+                selectedTgPost.deliveries?.length ??
+                0}
+            </div>
+          ) : null}
+        </div>
+      </div>
 
       {/* ✍️ Правая колонка — редактор */}
       <div className="flex flex-col">
@@ -274,154 +250,7 @@ export default function DemoPage() {
             {updateMutation.isPending ? "Сохранение..." : "Сохранить"}
           </Button>
         </div>
-
-        <div className="mt-6 rounded-lg border p-4 space-y-3">
-          <div className="font-medium">Telegram: article-published</div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">articleId</div>
-              <Input value={tgArticleId} readOnly className="font-mono" />
-            </div>
-
-            <div className="space-y-1">
-              <div className="text-sm text-muted-foreground">tags</div>
-              <Input value={tgTags.join(", ")} readOnly className="font-mono" />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">title</div>
-            <Input value={tgTitle} readOnly />
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">excerpt</div>
-            <Textarea value={tgExcerpt ?? ""} readOnly className="min-h-20" />
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">url</div>
-            <Input
-              value={tgUrl}
-              onChange={(e) => setTgUrl(e.target.value)}
-              placeholder="https://example.com/..."
-            />
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">
-              mediaUrls (assets, optional)
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm text-muted-foreground">
-                  Выбрано: {tgMediaAssets.length}/10
-                </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setMediaPickerOpen(true)}
-                  disabled={tgMediaAssets.length >= 10}
-                >
-                  Добавить asset
-                </Button>
-              </div>
-
-              {tgMediaAssets.length ? (
-                <div className="grid gap-2 grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
-                  {tgMediaAssets.map((asset) => {
-                    const thumb = getVariantUrl(asset) ?? asset.url;
-                    return (
-                      <div
-                        key={asset.id}
-                        className="flex items-center gap-2 rounded-md border p-2"
-                      >
-                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md border bg-muted">
-                          <img
-                            src={thumb}
-                            alt={asset.originalName}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium">
-                            {asset.originalName}
-                          </div>
-                          <div className="truncate text-xs text-muted-foreground font-mono">
-                            {getTelegramMediaUrl(asset) ?? asset.url}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          size="icon"
-                          variant="ghost"
-                          onClick={() =>
-                            setTgMediaAssets((prev) =>
-                              prev.filter((a) => a.id !== asset.id),
-                            )
-                          }
-                          title="Удалить"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="rounded-md border p-3 text-sm text-muted-foreground">
-                  Assets не выбраны
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setTgUrl("");
-                setTgMediaAssets([]);
-              }}
-              disabled={publishToTelegramMutation.isPending}
-            >
-              Очистить
-            </Button>
-            <Button
-              onClick={() => publishToTelegramMutation.mutate()}
-              disabled={publishToTelegramMutation.isPending}
-            >
-              {publishToTelegramMutation.isPending ? "Отправка..." : "Отправить"}
-            </Button>
-          </div>
-        </div>
       </div>
-
-      <Dialog open={mediaPickerOpen} onOpenChange={setMediaPickerOpen}>
-        <DialogContent className="max-w-5xl">
-          <DialogHeader>
-            <DialogTitle>Выбор изображений (Telegram mediaUrls)</DialogTitle>
-          </DialogHeader>
-          <FileManager
-            mode="pick"
-            types={["IMAGE"]}
-            accept="image/*"
-            onPick={(asset) => {
-              setTgMediaAssets((prev) => {
-                if (prev.some((a) => a.id === asset.id)) return prev;
-                if (prev.length >= 10) {
-                  toast.error("Максимум 10 изображений (лимит Telegram)");
-                  return prev;
-                }
-                return [...prev, asset];
-              });
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

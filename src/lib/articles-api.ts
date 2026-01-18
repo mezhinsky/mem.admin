@@ -15,6 +15,7 @@ export interface Article {
   title: string;
   description: string | null;
   content: unknown;
+  tgPostId?: string | null;
   thumbnailAssetId: string | null;
   ogImageAssetId: string | null;
   published: boolean;
@@ -44,6 +45,7 @@ export interface CreateArticleDto {
   slug?: string;
   description?: string;
   content?: unknown;
+  tgPostId?: string;
   thumbnailAssetId?: string;
   ogImageAssetId?: string;
   published?: boolean;

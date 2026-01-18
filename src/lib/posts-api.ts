@@ -73,6 +73,7 @@ export interface UpdatePostDto {
   excerpt?: string;
   url?: string;
   tags?: string[];
+  coverUrl?: string;
   createEditDeliveries?: boolean;
 }
 
@@ -114,5 +115,17 @@ export const postsApi = {
 
   update: async (id: string, dto: UpdatePostDto): Promise<UpdatePostResult> => {
     return api.patch<UpdatePostResult>(`/tg/posts/${id}`, dto);
+  },
+
+  delete: async (
+    id: string,
+  ): Promise<{
+    success: true;
+    deletedPostId: string;
+    deliveriesDeleted: number;
+    telegramMessagesDeleted: number;
+    telegramSkipped: boolean;
+  }> => {
+    return api.delete(`/tg/posts/${id}`);
   },
 };

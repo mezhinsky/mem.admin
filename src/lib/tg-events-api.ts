@@ -5,6 +5,7 @@ export interface ArticlePublishedEventDto {
   title: string;
   excerpt?: string;
   url: string;
+  coverUrl?: string;
   mediaUrls?: string[];
   tags: string[];
 }
@@ -32,4 +33,3 @@ export const tgEventsApi = {
     );
   },
 };
-

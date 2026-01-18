@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import FileManager from "@/components/file-manager/file-manager";
 import {
   Table,
   TableBody,
@@ -20,9 +21,47 @@ import {
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatDate";
 import { Textarea } from "@/components/ui/textarea";
+import type { Asset, JsonObject } from "@/lib/assets-api";
+import { X } from "lucide-react";
+import { toAbsoluteHttpUrl } from "@/lib/urls";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function getVariantUrl(asset: Asset): string | null {
+  const variantsValue = asset?.metadata?.variants;
+  if (!isJsonObject(variantsValue)) return null;
+  const variants = variantsValue as JsonObject;
+  const lg = variants["lg"];
+  const md = variants["md"];
+  const original = variants["original"];
+  if (typeof lg === "string") return lg;
+  if (typeof md === "string") return md;
+  if (typeof original === "string") return original;
+  return null;
+}
 
 export default function TgPostPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
   const queryClient = useQueryClient();
   const [isEditingPayload, setIsEditingPayload] = useState(false);
@@ -30,6 +69,11 @@ export default function TgPostPage() {
   const [urlDraft, setUrlDraft] = useState("");
   const [excerptDraft, setExcerptDraft] = useState("");
   const [tagsDraft, setTagsDraft] = useState("");
+  const [coverUrlDraft, setCoverUrlDraft] = useState("");
+  const [coverPickerOpen, setCoverPickerOpen] = useState(false);
+  const [selectedCoverAsset, setSelectedCoverAsset] = useState<Asset | null>(
+    null,
+  );
   const [createEditDeliveries, setCreateEditDeliveries] = useState(true);
 
   const { data: post, isLoading } = useQuery({
@@ -56,6 +100,7 @@ export default function TgPostPage() {
       url: string;
       excerpt?: string;
       tags: string[];
+      coverUrl?: string;
     }) => postsApi.update(id!, { ...payload, createEditDeliveries }),
     onSuccess: (result) => {
       toast.success(
@@ -65,6 +110,21 @@ export default function TgPostPage() {
       queryClient.invalidateQueries({ queryKey: ["tg-post", id] });
       queryClient.invalidateQueries({ queryKey: ["tg-posts"] });
       queryClient.invalidateQueries({ queryKey: ["tg-deliveries"] });
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${error.message}`);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => postsApi.delete(id!),
+    onSuccess: (result) => {
+      toast.success(
+        `Удалено. Deliveries: ${result.deliveriesDeleted}, Telegram: ${result.telegramMessagesDeleted}${result.telegramSkipped ? " (skipped)" : ""}`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["tg-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["tg-deliveries"] });
+      navigate("/tg-posts");
     },
     onError: (error) => {
       toast.error(`Ошибка: ${error.message}`);
@@ -98,11 +158,20 @@ export default function TgPostPage() {
     const tags = Array.isArray(parsedPayload.tags)
       ? parsedPayload.tags.map((t) => String(t))
       : [];
+    const coverUrl =
+      typeof parsedPayload.coverUrl === "string"
+        ? parsedPayload.coverUrl
+        : Array.isArray(parsedPayload.mediaUrls) &&
+            typeof parsedPayload.mediaUrls[0] === "string"
+          ? parsedPayload.mediaUrls[0]
+          : "";
 
     setTitleDraft(title);
     setUrlDraft(url);
     setExcerptDraft(excerpt);
     setTagsDraft(tags.join(", "));
+    setCoverUrlDraft(coverUrl);
+    setSelectedCoverAsset(null);
   }, [post, isEditingPayload, parsedPayload]);
 
   if (isLoading) {
@@ -168,12 +237,40 @@ export default function TgPostPage() {
           )}
         </div>
 
-        <Button
-          disabled={!canRetry || retryMutation.isPending}
-          onClick={() => retryMutation.mutate()}
-        >
-          {retryMutation.isPending ? "Запуск..." : "Переотправить FAILED"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="destructive">
+                Удалить
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Удалить публикацию?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Удалит запись из БД и попытается удалить сообщения из Telegram
+                  (если бот и права позволяют).
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => deleteMutation.mutate()}
+                  disabled={deleteMutation.isPending}
+                >
+                  {deleteMutation.isPending ? "Удаление..." : "Удалить"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <Button
+            disabled={!canRetry || retryMutation.isPending}
+            onClick={() => retryMutation.mutate()}
+          >
+            {retryMutation.isPending ? "Запуск..." : "Переотправить FAILED"}
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-md border">
@@ -242,6 +339,62 @@ export default function TgPostPage() {
         {isEditingPayload ? (
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">Cover</div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={coverUrlDraft}
+                    onChange={(e) => setCoverUrlDraft(e.target.value)}
+                    placeholder="https://..."
+                    className="font-mono"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setCoverPickerOpen(true)}
+                  >
+                    Выбрать asset
+                  </Button>
+                  {coverUrlDraft && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => {
+                        setCoverUrlDraft("");
+                        setSelectedCoverAsset(null);
+                      }}
+                      title="Очистить"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {coverUrlDraft && (
+                  <div className="mt-2 flex items-center gap-2 rounded-md border p-2">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border bg-muted">
+                      <img
+                        src={
+                          selectedCoverAsset
+                            ? getVariantUrl(selectedCoverAsset) ??
+                              selectedCoverAsset.url
+                            : coverUrlDraft
+                        }
+                        alt=""
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-xs text-muted-foreground font-mono">
+                        {coverUrlDraft}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-1">
                 <div className="text-sm text-muted-foreground">Title</div>
                 <Input
@@ -332,6 +485,16 @@ export default function TgPostPage() {
                     .map((t) => t.trim())
                     .filter(Boolean);
 
+                  const coverUrlRaw = coverUrlDraft.trim();
+                  const coverUrlValue = coverUrlRaw
+                    ? toAbsoluteHttpUrl(coverUrlRaw)
+                    : null;
+                  if (coverUrlRaw && !coverUrlValue) {
+                    toast.error("Cover должен быть URL");
+                    return;
+                  }
+                  const coverUrl = coverUrlValue ?? undefined;
+
                   updatePayloadMutation.mutate({
                     title,
                     url,
@@ -339,6 +502,7 @@ export default function TgPostPage() {
                       ? excerptDraft.trim()
                       : undefined,
                     tags,
+                    coverUrl,
                   });
                 }}
                 disabled={updatePayloadMutation.isPending}
@@ -355,6 +519,30 @@ export default function TgPostPage() {
           </pre>
         )}
       </div>
+
+      <Dialog open={coverPickerOpen} onOpenChange={setCoverPickerOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Выбор обложки (1 фото)</DialogTitle>
+          </DialogHeader>
+          <FileManager
+            mode="pick"
+            types={["IMAGE"]}
+            accept="image/*"
+            onPick={(asset) => {
+              const candidate = getVariantUrl(asset) ?? asset.url;
+              const url = toAbsoluteHttpUrl(candidate);
+              if (!url) {
+                toast.error("Невалидный URL у выбранного asset");
+                return;
+              }
+              setSelectedCoverAsset(asset);
+              setCoverUrlDraft(url);
+              setCoverPickerOpen(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

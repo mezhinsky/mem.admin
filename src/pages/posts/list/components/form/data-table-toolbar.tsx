@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { DataTableViewOptions } from "./data-table-view-options";
 import type { PostStatus } from "@/lib/posts-api";
+import { Link } from "react-router-dom";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -77,8 +78,10 @@ export function DataTableToolbar<TData>({
       </div>
       <div className="flex items-center gap-2">
         <DataTableViewOptions table={table} />
+        <Button size="sm" asChild>
+          <Link to="/tg-posts/new">Создать</Link>
+        </Button>
       </div>
     </div>
   );
 }
-
