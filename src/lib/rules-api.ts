@@ -20,13 +20,11 @@ export interface Rule {
 }
 
 export interface RulesListResponse {
-  data: Rule[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  items: Rule[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface RulesQueryParams {

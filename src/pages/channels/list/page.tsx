@@ -75,9 +75,9 @@ export default function ChannelsListPage() {
   return (
     <div className="container mx-auto p-4 space-y-4">
       <MMTable
-        data={data ? data.data.map((item) => ({ ...item, name: item.key })) : []}
+        data={data ? data.items.map((item) => ({ ...item, name: item.key })) : []}
         page={page}
-        totalPages={data ? data.meta.totalPages : 0}
+        totalPages={data?.totalPages ?? 0}
         limit={limit}
         columns={columns}
         sorting={sorting}

@@ -115,7 +115,7 @@ export default function DemoPage() {
     placeholderData: (prev) => prev,
   });
 
-  const tgPosts = useMemo(() => tgPostsPage?.data ?? [], [tgPostsPage]);
+  const tgPosts = useMemo(() => tgPostsPage?.items ?? [], [tgPostsPage]);
 
   const { data: selectedTgPost } = useQuery<TgPost | null>({
     queryKey: ["tg-post", tgPostIdDraft],

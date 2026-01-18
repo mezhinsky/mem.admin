@@ -96,7 +96,7 @@ const RuleForm = forwardRef<RuleFormHandle, RuleFormProps>(
       reset: form.reset,
     }));
 
-    const channelOptions = channels?.data ?? [];
+    const channelOptions = channels?.items ?? [];
 
     return (
       <Form {...form}>

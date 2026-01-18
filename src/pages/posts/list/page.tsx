@@ -98,9 +98,9 @@ export default function TgPostsListPage() {
   return (
     <div className="container mx-auto p-4 space-y-4">
       <DataTable
-        data={data?.data || []}
+        data={data?.items || []}
         page={page}
-        totalPages={data?.meta.totalPages || 0}
+        totalPages={data?.totalPages || 0}
         limit={limit}
         columns={columns}
         sorting={sorting}

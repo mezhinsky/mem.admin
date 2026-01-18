@@ -12,13 +12,11 @@ export interface Channel {
 }
 
 export interface ChannelsListResponse {
-  data: Channel[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  items: Channel[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface ChannelsQueryParams {
