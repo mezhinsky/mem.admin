@@ -18,6 +18,7 @@ export interface TgDelivery {
   id: string;
   postId: string;
   channelId: string;
+  revision: number;
   status: DeliveryStatus;
   telegramMessageId: string | null;
   attempts: number;
@@ -77,4 +78,3 @@ export const deliveriesApi = {
     return api.post<TgDelivery>(`/tg/deliveries/${id}/cancel`);
   },
 };
-

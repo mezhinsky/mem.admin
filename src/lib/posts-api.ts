@@ -13,6 +13,7 @@ export interface PostDelivery {
   id: string;
   postId: string;
   channelId: string;
+  revision: number;
   status: DeliveryStatus;
   telegramMessageId: string | null;
   attempts: number;
@@ -67,6 +68,16 @@ export interface PostsQueryParams {
   order?: "asc" | "desc";
 }
 
+export interface UpdatePostDto {
+  payload: Record<string, unknown>;
+  createEditDeliveries?: boolean;
+}
+
+export interface UpdatePostResult {
+  post: TgPost;
+  editDeliveriesCreated: number;
+}
+
 export const postsApi = {
   getAll: async (params: PostsQueryParams = {}): Promise<PaginatedResponse<TgPost>> => {
     const searchParams = new URLSearchParams();
@@ -97,5 +108,8 @@ export const postsApi = {
   retry: async (id: string): Promise<{ retriedCount: number }> => {
     return api.post<{ retriedCount: number }>(`/tg/posts/${id}/retry`);
   },
-};
 
+  update: async (id: string, dto: UpdatePostDto): Promise<UpdatePostResult> => {
+    return api.patch<UpdatePostResult>(`/tg/posts/${id}`, dto);
+  },
+};

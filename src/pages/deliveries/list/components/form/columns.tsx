@@ -67,6 +67,16 @@ export const columns: ColumnDef<TgDelivery>[] = [
     enableSorting: false,
   },
   {
+    id: "revision",
+    header: () => <div>Rev</div>,
+    cell: ({ row }) => (
+      <Badge variant="outline" className="font-mono">
+        {row.original.revision}
+      </Badge>
+    ),
+    enableSorting: false,
+  },
+  {
     id: "articleId",
     header: () => <div>Article</div>,
     cell: ({ row }) => (
@@ -150,4 +160,3 @@ export const columns: ColumnDef<TgDelivery>[] = [
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];
-

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 import { postsApi } from "@/lib/posts-api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
@@ -17,11 +18,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/formatDate";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function TgPostPage() {
   const { id } = useParams();
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
   const queryClient = useQueryClient();
+  const [isEditingPayload, setIsEditingPayload] = useState(false);
+  const [payloadDraft, setPayloadDraft] = useState("");
+  const [createEditDeliveries, setCreateEditDeliveries] = useState(true);
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["tg-post", id],
@@ -41,6 +46,23 @@ export default function TgPostPage() {
     },
   });
 
+  const updatePayloadMutation = useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      postsApi.update(id!, { payload, createEditDeliveries }),
+    onSuccess: (result) => {
+      toast.success(
+        `Payload сохранён. Edit deliveries: ${result.editDeliveriesCreated}`,
+      );
+      setIsEditingPayload(false);
+      queryClient.invalidateQueries({ queryKey: ["tg-post", id] });
+      queryClient.invalidateQueries({ queryKey: ["tg-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["tg-deliveries"] });
+    },
+    onError: (error) => {
+      toast.error(`Ошибка: ${error.message}`);
+    },
+  });
+
   useEffect(() => {
     setBreadcrumbPage([
       { link: "/", label: "Главная" },
@@ -48,6 +70,12 @@ export default function TgPostPage() {
       { link: "", label: post?.articleId ?? "Публикация" },
     ]);
   }, [setBreadcrumbPage, post]);
+
+  useEffect(() => {
+    if (!post) return;
+    if (isEditingPayload) return;
+    setPayloadDraft(JSON.stringify(post.payload, null, 2));
+  }, [post, isEditingPayload]);
 
   if (isLoading) {
     return (
@@ -125,6 +153,7 @@ export default function TgPostPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Канал</TableHead>
+              <TableHead>Rev</TableHead>
               <TableHead>Статус</TableHead>
               <TableHead>Attempts</TableHead>
               <TableHead>Sent</TableHead>
@@ -137,6 +166,9 @@ export default function TgPostPage() {
                 <TableRow key={delivery.id}>
                   <TableCell className="font-mono text-sm">
                     {delivery.channel?.key ?? delivery.channelId}
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">
+                    {delivery.revision}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-mono">
@@ -156,7 +188,7 @@ export default function TgPostPage() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Нет доставок
                 </TableCell>
               </TableRow>
@@ -165,13 +197,82 @@ export default function TgPostPage() {
         </Table>
       </div>
 
-      <details className="rounded-md border p-4">
-        <summary className="cursor-pointer select-none">Payload</summary>
-        <pre className="mt-3 whitespace-pre-wrap text-sm">
-          {JSON.stringify(post.payload, null, 2)}
-        </pre>
-      </details>
+      <div className="rounded-md border p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="font-medium">Payload</div>
+          {!isEditingPayload && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsEditingPayload(true)}
+            >
+              Редактировать
+            </Button>
+          )}
+        </div>
+
+        {isEditingPayload ? (
+          <div className="space-y-3">
+            <Textarea
+              value={payloadDraft}
+              onChange={(e) => setPayloadDraft(e.target.value)}
+              className="font-mono text-sm min-h-[260px]"
+            />
+
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Checkbox
+                checked={createEditDeliveries}
+                onCheckedChange={(v) => setCreateEditDeliveries(v === true)}
+              />
+              <span>Создать доставки для обновления в Telegram</span>
+            </label>
+
+            <div className="flex items-center justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditingPayload(false);
+                  setPayloadDraft(JSON.stringify(post.payload, null, 2));
+                }}
+                disabled={updatePayloadMutation.isPending}
+              >
+                Отмена
+              </Button>
+              <Button
+                onClick={() => {
+                  let parsed: unknown;
+                  try {
+                    parsed = JSON.parse(payloadDraft);
+                  } catch {
+                    toast.error("Payload должен быть валидным JSON");
+                    return;
+                  }
+
+                  if (
+                    !parsed ||
+                    typeof parsed !== "object" ||
+                    Array.isArray(parsed)
+                  ) {
+                    toast.error("Payload должен быть JSON-объектом");
+                    return;
+                  }
+
+                  updatePayloadMutation.mutate(parsed as Record<string, unknown>);
+                }}
+                disabled={updatePayloadMutation.isPending}
+              >
+                {updatePayloadMutation.isPending
+                  ? "Сохранение..."
+                  : "Сохранить"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <pre className="whitespace-pre-wrap text-sm">
+            {JSON.stringify(post.payload, null, 2)}
+          </pre>
+        )}
+      </div>
     </div>
   );
 }
-
