@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -8,6 +8,7 @@ import { postsApi } from "@/lib/posts-api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
@@ -25,7 +26,10 @@ export default function TgPostPage() {
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
   const queryClient = useQueryClient();
   const [isEditingPayload, setIsEditingPayload] = useState(false);
-  const [payloadDraft, setPayloadDraft] = useState("");
+  const [titleDraft, setTitleDraft] = useState("");
+  const [urlDraft, setUrlDraft] = useState("");
+  const [excerptDraft, setExcerptDraft] = useState("");
+  const [tagsDraft, setTagsDraft] = useState("");
   const [createEditDeliveries, setCreateEditDeliveries] = useState(true);
 
   const { data: post, isLoading } = useQuery({
@@ -47,8 +51,12 @@ export default function TgPostPage() {
   });
 
   const updatePayloadMutation = useMutation({
-    mutationFn: (payload: Record<string, unknown>) =>
-      postsApi.update(id!, { payload, createEditDeliveries }),
+    mutationFn: (payload: {
+      title: string;
+      url: string;
+      excerpt?: string;
+      tags: string[];
+    }) => postsApi.update(id!, { ...payload, createEditDeliveries }),
     onSuccess: (result) => {
       toast.success(
         `Payload сохранён. Edit deliveries: ${result.editDeliveriesCreated}`,
@@ -71,11 +79,31 @@ export default function TgPostPage() {
     ]);
   }, [setBreadcrumbPage, post]);
 
+  const parsedPayload = useMemo(() => {
+    const raw = post?.payload;
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+      return raw as Record<string, unknown>;
+    }
+    return {};
+  }, [post]);
+
   useEffect(() => {
     if (!post) return;
     if (isEditingPayload) return;
-    setPayloadDraft(JSON.stringify(post.payload, null, 2));
-  }, [post, isEditingPayload]);
+    const title =
+      typeof parsedPayload.title === "string" ? parsedPayload.title : "";
+    const url = typeof parsedPayload.url === "string" ? parsedPayload.url : "";
+    const excerpt =
+      typeof parsedPayload.excerpt === "string" ? parsedPayload.excerpt : "";
+    const tags = Array.isArray(parsedPayload.tags)
+      ? parsedPayload.tags.map((t) => String(t))
+      : [];
+
+    setTitleDraft(title);
+    setUrlDraft(url);
+    setExcerptDraft(excerpt);
+    setTagsDraft(tags.join(", "));
+  }, [post, isEditingPayload, parsedPayload]);
 
   if (isLoading) {
     return (
@@ -213,11 +241,42 @@ export default function TgPostPage() {
 
         {isEditingPayload ? (
           <div className="space-y-3">
-            <Textarea
-              value={payloadDraft}
-              onChange={(e) => setPayloadDraft(e.target.value)}
-              className="font-mono text-sm min-h-[260px]"
-            />
+            <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">Title</div>
+                <Input
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">URL</div>
+                <Input
+                  value={urlDraft}
+                  onChange={(e) => setUrlDraft(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">Excerpt</div>
+                <Textarea
+                  value={excerptDraft}
+                  onChange={(e) => setExcerptDraft(e.target.value)}
+                  className="min-h-[120px]"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <div className="text-sm text-muted-foreground">
+                  Tags (comma-separated)
+                </div>
+                <Input
+                  value={tagsDraft}
+                  onChange={(e) => setTagsDraft(e.target.value)}
+                />
+              </div>
+            </div>
 
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <Checkbox
@@ -232,7 +291,24 @@ export default function TgPostPage() {
                 variant="outline"
                 onClick={() => {
                   setIsEditingPayload(false);
-                  setPayloadDraft(JSON.stringify(post.payload, null, 2));
+                  setTitleDraft(
+                    typeof parsedPayload.title === "string"
+                      ? parsedPayload.title
+                      : "",
+                  );
+                  setUrlDraft(
+                    typeof parsedPayload.url === "string" ? parsedPayload.url : "",
+                  );
+                  setExcerptDraft(
+                    typeof parsedPayload.excerpt === "string"
+                      ? parsedPayload.excerpt
+                      : "",
+                  );
+                  setTagsDraft(
+                    Array.isArray(parsedPayload.tags)
+                      ? parsedPayload.tags.map((t) => String(t)).join(", ")
+                      : "",
+                  );
                 }}
                 disabled={updatePayloadMutation.isPending}
               >
@@ -240,24 +316,30 @@ export default function TgPostPage() {
               </Button>
               <Button
                 onClick={() => {
-                  let parsed: unknown;
-                  try {
-                    parsed = JSON.parse(payloadDraft);
-                  } catch {
-                    toast.error("Payload должен быть валидным JSON");
+                  const title = titleDraft.trim();
+                  const url = urlDraft.trim();
+                  if (!title) {
+                    toast.error("Title не может быть пустым");
+                    return;
+                  }
+                  if (!url) {
+                    toast.error("URL не может быть пустым");
                     return;
                   }
 
-                  if (
-                    !parsed ||
-                    typeof parsed !== "object" ||
-                    Array.isArray(parsed)
-                  ) {
-                    toast.error("Payload должен быть JSON-объектом");
-                    return;
-                  }
+                  const tags = tagsDraft
+                    .split(/[\n,]/g)
+                    .map((t) => t.trim())
+                    .filter(Boolean);
 
-                  updatePayloadMutation.mutate(parsed as Record<string, unknown>);
+                  updatePayloadMutation.mutate({
+                    title,
+                    url,
+                    excerpt: excerptDraft.trim()
+                      ? excerptDraft.trim()
+                      : undefined,
+                    tags,
+                  });
                 }}
                 disabled={updatePayloadMutation.isPending}
               >

@@ -69,7 +69,10 @@ export interface PostsQueryParams {
 }
 
 export interface UpdatePostDto {
-  payload: Record<string, unknown>;
+  title?: string;
+  excerpt?: string;
+  url?: string;
+  tags?: string[];
   createEditDeliveries?: boolean;
 }
 
