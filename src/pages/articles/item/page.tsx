@@ -9,13 +9,17 @@ import { Spinner } from "@/components/ui/spinner";
 import { useBreadcrumb } from "@/hooks/use-breadcrumb";
 import { articlesApi, type UpdateArticleDto } from "@/lib/articles-api";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { ChevronsUpDown, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { postsApi, type TgPost } from "@/lib/posts-api";
 import { formatDate } from "@/lib/formatDate";
 import { buildFrontendArticleUrl, getPublicSiteBaseUrl } from "@/lib/urls";
@@ -29,6 +33,7 @@ export default function DemoPage() {
   const [content, setContent] = useState<unknown | null>(null);
   const formRef = useRef<ArticleFormHandle>(null);
   const [tgPostIdDraft, setTgPostIdDraft] = useState("");
+  const [tgPostSelectOpen, setTgPostSelectOpen] = useState(false);
 
   const { setPage: setBreadcrumbPage } = useBreadcrumb();
 
@@ -195,28 +200,67 @@ export default function DemoPage() {
 
           <div className="space-y-1">
             <div className="text-sm text-muted-foreground">tg post</div>
-            <Select
-              value={tgPostIdDraft || "none"}
-              onValueChange={(value) => {
-                if (value === "none") {
-                  setTgPostIdDraft("");
-                  return;
-                }
-                setTgPostIdDraft(value);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Не выбрано" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Не выбрано</SelectItem>
-                {tgPostsForSelect.map((p: TgPost) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.articleId} · {p.status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={tgPostSelectOpen} onOpenChange={setTgPostSelectOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={tgPostSelectOpen}
+                  className="w-full justify-between font-normal"
+                >
+                  {tgPostIdDraft
+                    ? tgPostsForSelect.find((p) => p.id === tgPostIdDraft)
+                        ?.articleId ?? "Не выбрано"
+                    : "Не выбрано"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Поиск по articleId..." />
+                  <CommandList>
+                    <CommandEmpty>Посты не найдены</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value=""
+                        onSelect={() => {
+                          setTgPostIdDraft("");
+                          setTgPostSelectOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            !tgPostIdDraft ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        Не выбрано
+                      </CommandItem>
+                      {tgPostsForSelect.map((p: TgPost) => (
+                        <CommandItem
+                          key={p.id}
+                          value={p.articleId}
+                          onSelect={() => {
+                            setTgPostIdDraft(p.id === tgPostIdDraft ? "" : p.id);
+                            setTgPostSelectOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              tgPostIdDraft === p.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          <span className="truncate">
+                            {p.articleId} · {p.status}
+                          </span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {selectedTgPost ? (

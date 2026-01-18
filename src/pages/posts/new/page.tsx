@@ -13,13 +13,17 @@ import { buildFrontendArticleUrl, toAbsoluteHttpUrl } from "@/lib/urls";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { ChevronsUpDown, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +57,7 @@ export default function TgPostCreatePage() {
 
   const [articleSearch, setArticleSearch] = useState("");
   const [selectedArticleId, setSelectedArticleId] = useState<string>("");
+  const [articleSelectOpen, setArticleSelectOpen] = useState(false);
 
   const [articleIdDraft, setArticleIdDraft] = useState("");
   const [titleDraft, setTitleDraft] = useState("");
@@ -179,45 +184,65 @@ export default function TgPostCreatePage() {
       <div className="rounded-lg border p-4 space-y-4">
         <div className="font-medium">Создать tg-post</div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Поиск статьи</div>
-            <Input
-              value={articleSearch}
-              onChange={(e) => setArticleSearch(e.target.value)}
-              placeholder="title / slug..."
-            />
-          </div>
-
-          <div className="space-y-1">
-            <div className="text-sm text-muted-foreground">Статья</div>
-            <Select
-              value={selectedArticleId || "none"}
-              onValueChange={(value) => {
-                if (value === "none") {
-                  setSelectedArticleId("");
-                  return;
-                }
-                setSelectedArticleId(value);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    isArticlesLoading ? "Загрузка..." : "Выберите статью"
-                  }
+        <div className="space-y-1">
+          <div className="text-sm text-muted-foreground">Статья</div>
+          <Popover open={articleSelectOpen} onOpenChange={setArticleSelectOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={articleSelectOpen}
+                className="w-full justify-between font-normal"
+              >
+                {selectedArticleId
+                  ? articles.find((a) => String(a.id) === selectedArticleId)
+                      ?.title ?? "Выберите статью"
+                  : "Выберите статью"}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0" align="start">
+              <Command shouldFilter={false}>
+                <CommandInput
+                  placeholder="Поиск по title / slug..."
+                  value={articleSearch}
+                  onValueChange={setArticleSearch}
                 />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Не выбрано</SelectItem>
-                {articles.map((a) => (
-                  <SelectItem key={a.id} value={String(a.id)}>
-                    {(a.slug ? `${a.slug} · ` : "") + a.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <CommandList>
+                  <CommandEmpty>
+                    {isArticlesLoading ? "Загрузка..." : "Статьи не найдены"}
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {articles.map((a) => (
+                      <CommandItem
+                        key={a.id}
+                        value={String(a.id)}
+                        onSelect={() => {
+                          setSelectedArticleId(
+                            String(a.id) === selectedArticleId ? "" : String(a.id)
+                          );
+                          setArticleSelectOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedArticleId === String(a.id)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        <span className="truncate">
+                          {a.slug ? `${a.slug} · ` : ""}
+                          {a.title}
+                        </span>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {isSelectedArticleLoading ? (
