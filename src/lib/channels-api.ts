@@ -1,4 +1,5 @@
 import { api } from "./api/client";
+import type { PaginatedResponse } from "./api/types";
 
 export interface Channel {
   id: string;
@@ -11,13 +12,7 @@ export interface Channel {
   updatedAt: string;
 }
 
-export interface ChannelsListResponse {
-  items: Channel[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+export type ChannelsListResponse = PaginatedResponse<Channel>;
 
 export interface ChannelsQueryParams {
   page?: number;

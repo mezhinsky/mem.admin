@@ -1,12 +1,7 @@
 import { api } from "./api/client";
+import type { PaginatedResponse, ChannelRef } from "./api/types";
 
 export type RuleType = "TAG" | "CATEGORY" | "ALL";
-
-export interface RuleChannelRef {
-  id: string;
-  key: string;
-  title: string | null;
-}
 
 export interface Rule {
   id: string;
@@ -16,16 +11,10 @@ export interface Rule {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  channel?: RuleChannelRef;
+  channel?: ChannelRef;
 }
 
-export interface RulesListResponse {
-  items: Rule[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+export type RulesListResponse = PaginatedResponse<Rule>;
 
 export interface RulesQueryParams {
   page?: number;

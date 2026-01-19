@@ -1,12 +1,10 @@
 import { api } from "./api/client";
+import type { Role, User as BaseUser } from "./api/types";
 
-export type Role = "USER" | "ADMIN";
+export type { Role };
 
-export interface User {
-  id: string;
-  email: string | null;
-  name: string | null;
-  avatar: string | null;
+// Extended User with required fields for admin panel
+export interface User extends BaseUser {
   role: Role;
   isActive: boolean;
   createdAt: string;

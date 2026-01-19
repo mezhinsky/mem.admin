@@ -1,17 +1,12 @@
 import { api } from "./api/client";
+import type { PaginatedResponse, DeliveryStatus, ChannelRef } from "./api/types";
 
-export type DeliveryStatus = "PENDING" | "SENT" | "FAILED" | "CANCELLED";
+export type { DeliveryStatus };
 
 export interface DeliveryPostRef {
   id: string;
   articleId: string;
   status: string;
-}
-
-export interface DeliveryChannelRef {
-  id: string;
-  key: string;
-  title: string | null;
 }
 
 export interface TgDelivery {
@@ -27,15 +22,7 @@ export interface TgDelivery {
   createdAt: string;
   updatedAt: string;
   post?: DeliveryPostRef;
-  channel?: DeliveryChannelRef;
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  channel?: ChannelRef;
 }
 
 export interface DeliveriesQueryParams {

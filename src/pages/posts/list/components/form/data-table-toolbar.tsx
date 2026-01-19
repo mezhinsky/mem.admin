@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DataTableViewOptions } from "./data-table-view-options";
+import { DataTableViewOptions } from "@/components/data-table";
 import type { PostStatus } from "@/lib/posts-api";
 import { Link } from "react-router-dom";
 

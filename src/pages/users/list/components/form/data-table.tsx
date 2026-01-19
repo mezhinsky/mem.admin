@@ -38,7 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { DataTablePagination } from "./data-table-pagination";
+import { DataTablePagination } from "@/components/data-table";
 import { DataTableToolbar } from "./data-table-toolbar";
 import type { Role } from "@/lib/users-api";
 

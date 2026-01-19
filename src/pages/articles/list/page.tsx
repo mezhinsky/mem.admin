@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "@/pages/articles/list/components/form/columns";
 
-import { DataTable as MMTable } from "@/pages/articles/list/components/form/data-table";
+import { DataTable } from "@/pages/articles/list/components/form/data-table";
 import type {
   ColumnFiltersState,
   RowSelectionState,
@@ -100,7 +100,7 @@ export default function DemoPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-4">
-      <MMTable
+      <DataTable
         data={
           data ? data.items.map((item) => ({ ...item, name: item.title })) : []
         }

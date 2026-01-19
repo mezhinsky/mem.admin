@@ -1,13 +1,12 @@
 import { api } from "./api/client";
+import type {
+  PaginatedResponse,
+  PostStatus,
+  DeliveryStatus,
+  ChannelRef,
+} from "./api/types";
 
-export type PostStatus = "PENDING" | "SENT" | "PARTIAL" | "FAILED";
-export type DeliveryStatus = "PENDING" | "SENT" | "FAILED" | "CANCELLED";
-
-export interface PostChannelRef {
-  id: string;
-  key: string;
-  title: string | null;
-}
+export type { PostStatus, DeliveryStatus };
 
 export interface PostDelivery {
   id: string;
@@ -21,7 +20,7 @@ export interface PostDelivery {
   sentAt: string | null;
   createdAt: string;
   updatedAt: string;
-  channel?: PostChannelRef;
+  channel?: ChannelRef;
 }
 
 export interface ArticlePayload {
@@ -45,14 +44,6 @@ export interface TgPost {
   _count?: {
     deliveries: number;
   };
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
 }
 
 export interface PostsQueryParams {

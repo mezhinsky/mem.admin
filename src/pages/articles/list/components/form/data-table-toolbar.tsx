@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTableViewOptions } from "@/pages/articles/list/components/form/data-table-view-options";
+import { DataTableViewOptions } from "@/components/data-table";
 import { Link } from "react-router-dom";
 
 // import { priorities, statuses } from "../data/data";

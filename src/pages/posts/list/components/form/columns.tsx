@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
-import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableColumnHeader } from "@/components/data-table";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { formatDate } from "@/lib/formatDate";
 import type { TgPost } from "@/lib/posts-api";

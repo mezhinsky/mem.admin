@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DataTableViewOptions } from "./data-table-view-options";
+import { DataTableViewOptions } from "@/components/data-table";
 import type { DeliveryStatus } from "@/lib/deliveries-api";
 
 interface DataTableToolbarProps<TData> {

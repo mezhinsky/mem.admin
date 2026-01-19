@@ -2,12 +2,9 @@
  * Auth-related type definitions
  */
 
-export interface User {
-  id: string;
-  email: string | null;
-  name: string | null;
-  avatar: string | null;
-}
+import type { User } from "../api/types";
+
+export type { User };
 
 export interface AuthState {
   user: User | null;

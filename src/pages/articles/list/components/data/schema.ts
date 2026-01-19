@@ -12,7 +12,7 @@ export const taskSchema = z.object({
 
 export type Task = z.infer<typeof taskSchema>;
 
-export const atricleSchema = z.object({
+export const articleSchema = z.object({
   id: z.number(),
   name: z.string(),
   title: z.string(),
@@ -22,4 +22,4 @@ export const atricleSchema = z.object({
   updatedAt: z.date(),
 });
 
-export type Article = z.infer<typeof atricleSchema>;
+export type Article = z.infer<typeof articleSchema>;

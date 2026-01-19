@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { labels } from "../data/data";
 import type { Article } from "../data/schema";
-import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableColumnHeader } from "@/components/data-table";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { formatDate } from "@/lib/formatDate";
 

@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableColumnHeader } from "@/components/data-table";
 import { DataTableRowActions } from "./data-table-row-actions";
 import type { User } from "@/lib/users-api";
 import { formatDate } from "@/lib/formatDate";
