@@ -91,3 +91,13 @@ export function isTokenExpired(token: string): boolean {
   // Add 10 second buffer to account for clock skew
   return Date.now() >= (payload.exp * 1000) - 10000;
 }
+
+/**
+ * Check if we have the necessary credentials to attempt a token refresh
+ * Used to prevent premature redirect to login when token is expired but refreshable
+ */
+export function canAttemptRefresh(): boolean {
+  const sessionId = getSessionId();
+  const csrfToken = getCsrfToken();
+  return !!(sessionId && csrfToken);
+}

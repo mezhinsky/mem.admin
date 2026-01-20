@@ -1,9 +1,19 @@
 import { api } from "./api/client";
 
+export interface TagAsset {
+  id: string;
+  url: string;
+  originalName: string;
+  mimeType: string;
+  metadata: Record<string, unknown> | null;
+}
+
 export interface Tag {
   id: number;
   name: string;
   slug: string;
+  coverAssetId: string | null;
+  coverAsset?: TagAsset | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +37,7 @@ export interface TagsListResponse {
 export interface CreateTagDto {
   name: string;
   slug: string;
+  coverAssetId?: string;
 }
 
 export type UpdateTagDto = Partial<CreateTagDto>;

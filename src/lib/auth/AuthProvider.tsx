@@ -15,6 +15,7 @@ import {
   getSessionId,
   clearSessionId,
   isTokenExpired,
+  canAttemptRefresh,
 } from './utils';
 import type { User, AuthContextValue } from './types';
 
@@ -30,9 +31,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Use ref to always have latest token available for API client
   const accessTokenRef = useRef<string | null>(null);
+  const refreshPromiseRef = useRef<Promise<boolean> | null>(null);
 
   const navigate = useNavigate();
 
@@ -80,6 +83,69 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const getAccessToken = useCallback(() => {
     return accessTokenRef.current;
   }, []);
+
+  /**
+   * Proactively refresh access token
+   * Single-flight pattern: only one refresh at a time
+   */
+  const refreshToken = useCallback(async (): Promise<boolean> => {
+    // If refresh is already in progress, wait for it
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current;
+    }
+
+    const sessionId = getSessionId();
+    const csrfToken = getCsrfToken();
+
+    if (!sessionId || !csrfToken) {
+      return false;
+    }
+
+    setIsRefreshing(true);
+
+    refreshPromiseRef.current = (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken,
+          },
+          body: JSON.stringify({ sessionId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Refresh failed');
+        }
+
+        const data = await response.json();
+
+        // Fetch user info with the new token
+        const meResponse = await fetch(`${API_BASE_URL}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${data.accessToken}`,
+          },
+        });
+
+        if (!meResponse.ok) {
+          throw new Error('Failed to fetch user info');
+        }
+
+        const userData = await meResponse.json();
+        setAuth(data.accessToken, userData);
+        return true;
+      } catch (error) {
+        console.error('Token refresh failed:', error);
+        return false;
+      } finally {
+        setIsRefreshing(false);
+        refreshPromiseRef.current = null;
+      }
+    })();
+
+    return refreshPromiseRef.current;
+  }, [setAuth]);
 
   /**
    * Logout from current session
@@ -200,11 +266,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     tryRestoreSession();
   }, [setAuth, clearAuth]);
 
+  /**
+   * Proactive token refresh when expired but refreshable
+   * This prevents redirect to login when token is expired but session is still valid
+   */
+  useEffect(() => {
+    // Skip if still loading initial session, already refreshing, or no token
+    if (isLoading || isRefreshing || !accessToken) {
+      return;
+    }
+
+    // Check if token is expired
+    if (isTokenExpired(accessToken)) {
+      // Check if we can attempt refresh
+      if (canAttemptRefresh()) {
+        // Trigger refresh - don't await, just fire it
+        refreshToken().then((success) => {
+          if (!success) {
+            // Refresh failed - clear auth and let RequireAuth redirect
+            clearAuth();
+          }
+        });
+      }
+    }
+  }, [accessToken, isLoading, isRefreshing, refreshToken, clearAuth]);
+
+  // Consider authenticated if:
+  // 1. We have a valid non-expired token, OR
+  // 2. Token is expired but we're currently refreshing
+  const isAuthenticated = !!accessToken && (!isTokenExpired(accessToken) || isRefreshing);
+
   const value: AuthContextValue = {
     user,
     accessToken,
-    isAuthenticated: !!accessToken && !isTokenExpired(accessToken || ''),
-    isLoading,
+    isAuthenticated,
+    isLoading: isLoading || isRefreshing, // Show loading during refresh too
     login,
     logout,
     logoutAll,
