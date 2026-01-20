@@ -276,31 +276,39 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    // Check if token is expired
-    if (isTokenExpired(accessToken)) {
-      // Check if we can attempt refresh
-      if (canAttemptRefresh()) {
-        // Trigger refresh - don't await, just fire it
-        refreshToken().then((success) => {
-          if (!success) {
-            // Refresh failed - clear auth and let RequireAuth redirect
-            clearAuth();
-          }
-        });
-      }
+    // Check if token is expired and we can refresh
+    if (isTokenExpired(accessToken) && canAttemptRefresh()) {
+      // Trigger refresh - don't await, just fire it
+      refreshToken().then((success) => {
+        if (!success) {
+          // Refresh failed - clear auth and let RequireAuth redirect
+          clearAuth();
+        }
+      });
     }
   }, [accessToken, isLoading, isRefreshing, refreshToken, clearAuth]);
 
+  // Check if we need to refresh (token expired but we have credentials to refresh)
+  // This is computed synchronously BEFORE useEffect runs
+  const tokenExpired = !!accessToken && isTokenExpired(accessToken);
+  const needsRefresh = tokenExpired && canAttemptRefresh() && !isRefreshing;
+
   // Consider authenticated if:
   // 1. We have a valid non-expired token, OR
-  // 2. Token is expired but we're currently refreshing
-  const isAuthenticated = !!accessToken && (!isTokenExpired(accessToken) || isRefreshing);
+  // 2. Token is expired but we're refreshing or about to refresh
+  const isAuthenticated = !!accessToken && (!tokenExpired || isRefreshing || needsRefresh);
+
+  // Show loading if:
+  // 1. Initial session restore in progress, OR
+  // 2. Token refresh in progress, OR
+  // 3. Token expired and refresh is about to start (needsRefresh)
+  const showLoading = isLoading || isRefreshing || needsRefresh;
 
   const value: AuthContextValue = {
     user,
     accessToken,
     isAuthenticated,
-    isLoading: isLoading || isRefreshing, // Show loading during refresh too
+    isLoading: showLoading,
     login,
     logout,
     logoutAll,
