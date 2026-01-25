@@ -74,6 +74,7 @@ export default function DemoPage() {
           slug: updated.slug ?? "",
           description: updated.description ?? "",
           published: updated.published,
+          weight: updated.weight ?? 1,
           thumbnailAssetId: updated.thumbnailAssetId ?? undefined,
           ogImageAssetId: updated.ogImageAssetId ?? undefined,
           tagIds: updated.tags?.map((t) => t.id) ?? [],
@@ -155,6 +156,7 @@ export default function DemoPage() {
         slug: article.slug ?? "",
         description: article.description ?? "",
         published: article.published,
+        weight: article.weight ?? 1,
         thumbnailAssetId: article.thumbnailAssetId ?? undefined,
         ogImageAssetId: article.ogImageAssetId ?? undefined,
       });
@@ -179,6 +181,7 @@ export default function DemoPage() {
         ? formValues.description
         : undefined,
       published: formValues.published,
+      weight: formValues.weight,
       thumbnailAssetId: formValues.thumbnailAssetId || undefined,
       ogImageAssetId: formValues.ogImageAssetId || undefined,
       content: content ?? undefined,
