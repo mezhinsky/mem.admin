@@ -114,10 +114,20 @@ const router = createBrowserRouter([
   },
 ]);
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        // Don't retry on auth errors (401, 403)
+        if (error instanceof Error && 'status' in error) {
+          const status = (error as { status?: number }).status;
+          if (status === 401 || status === 403) {
+            return false;
+          }
+        }
+        // Retry once for other errors
+        return failureCount < 1;
+      },
       refetchOnWindowFocus: false,
       staleTime: 30_000,
     },

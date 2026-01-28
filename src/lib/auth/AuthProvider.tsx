@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { queryClient } from '@/main';
 import { API_BASE_URL } from '../api';
 import { initApiClient } from '../api/client';
 import {
@@ -75,6 +76,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
     clearSessionId();
     setIsLoading(false);
+
+    // Clear all queries and mutations to prevent stale data and infinite retries
+    queryClient.clear();
   }, []);
 
   /**
