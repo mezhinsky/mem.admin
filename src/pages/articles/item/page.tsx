@@ -159,6 +159,7 @@ export default function DemoPage() {
         weight: article.weight ?? 1,
         thumbnailAssetId: article.thumbnailAssetId ?? undefined,
         ogImageAssetId: article.ogImageAssetId ?? undefined,
+        tagIds: article.tags?.map((t) => t.id) ?? [],
       });
     }
 
