@@ -25,6 +25,7 @@ export interface Asset {
   mimeType: string;
   size: number;
   metadata: JsonObject | null;
+  folderId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,11 +40,18 @@ export interface AssetsQueryParams {
   search?: string;
   sortBy?: "createdAt" | "updatedAt" | "originalName" | "size";
   order?: "asc" | "desc";
+  folderId?: string | null;
 }
 
 export interface UpdateAssetDto {
   originalName?: string;
   metadata?: JsonObject | null;
+  folderId?: string | null;
+}
+
+export interface BulkMoveAssetsDto {
+  assetIds: string[];
+  folderId?: string | null;
 }
 
 export const assetsApi = {
@@ -59,6 +67,9 @@ export const assetsApi = {
     if (params.search) searchParams.set("search", params.search);
     if (params.sortBy) searchParams.set("sortBy", params.sortBy);
     if (params.order) searchParams.set("order", params.order);
+    if (params.folderId !== undefined) {
+      searchParams.set("folderId", params.folderId === null ? "null" : params.folderId);
+    }
 
     const query = searchParams.toString();
     return api.get<AssetsListResponse>(`/assets${query ? `?${query}` : ""}`);
@@ -80,6 +91,10 @@ export const assetsApi = {
 
   delete: async (id: string): Promise<Asset> => {
     return api.delete<Asset>(`/assets/${id}`);
+  },
+
+  bulkMove: async (data: BulkMoveAssetsDto): Promise<{ count: number }> => {
+    return api.post<{ count: number }>("/assets/bulk-move", data);
   },
 };
 
