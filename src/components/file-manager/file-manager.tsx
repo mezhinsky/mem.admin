@@ -77,6 +77,7 @@ export default function FileManager({
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
   const limit = 30;
 
   const queryKey = useMemo(
@@ -90,14 +91,39 @@ export default function FileManager({
   });
 
   const uploadMutation = useMutation({
-    mutationFn: uploadAsset,
-    onSuccess: () => {
-      toast.success("Файл загружен");
+    mutationFn: async (files: File[]) => {
+      setUploadProgress({ total: files.length, completed: 0 });
+      const results: Asset[] = [];
+      const errors: string[] = [];
+
+      for (const file of files) {
+        try {
+          const asset = await uploadAsset({ file });
+          results.push(asset);
+          setUploadProgress((prev) => prev ? { ...prev, completed: prev.completed + 1 } : null);
+        } catch (err) {
+          console.error(err);
+          errors.push(file.name);
+        }
+      }
+
+      if (errors.length > 0) {
+        throw new Error(`Не удалось загрузить: ${errors.join(", ")}`);
+      }
+
+      return results;
+    },
+    onSuccess: (assets) => {
+      const count = assets.length;
+      toast.success(count === 1 ? "Файл загружен" : `Загружено файлов: ${count}`);
       queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
     onError: (err) => {
       console.error(err);
-      toast.error("Не удалось загрузить файл");
+      toast.error(err instanceof Error ? err.message : "Не удалось загрузить файлы");
+    },
+    onSettled: () => {
+      setUploadProgress(null);
     },
   });
 
@@ -124,10 +150,10 @@ export default function FileManager({
   const handleUploadClick = () => fileInputRef.current?.click();
 
   const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    uploadMutation.mutate({ file });
+    uploadMutation.mutate(Array.from(files));
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -168,12 +194,15 @@ export default function FileManager({
             {uploadMutation.isPending && (
               <Spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Загрузить
+            {uploadProgress
+              ? `Загрузка ${uploadProgress.completed}/${uploadProgress.total}`
+              : "Загрузить"}
           </Button>
           <input
             ref={fileInputRef}
             type="file"
             accept={accept}
+            multiple
             className="hidden"
             onChange={handleUpload}
           />
