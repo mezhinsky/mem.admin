@@ -19,6 +19,12 @@ import Color from "@tiptap/extension-color";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
 
+import {
+  CloudStorageLink,
+  detectCloudStorageProvider,
+  CLOUD_STORAGE_LABELS,
+} from "./extensions/cloud-storage-link";
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
 
@@ -71,6 +77,7 @@ import {
   Undo,
   Redo,
   Palette,
+  CloudIcon,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -185,6 +192,9 @@ export default function AdminEditor({
   const [linkPopoverOpen, setLinkPopoverOpen] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [youtubePopoverOpen, setYoutubePopoverOpen] = useState(false);
+  const [cloudStorageUrl, setCloudStorageUrl] = useState("");
+  const [cloudStorageTitle, setCloudStorageTitle] = useState("");
+  const [cloudStoragePopoverOpen, setCloudStoragePopoverOpen] = useState(false);
 
   const lastInitialContent = useRef<string | null>(null);
 
@@ -233,6 +243,7 @@ export default function AdminEditor({
       Typography,
       TextStyle,
       Color,
+      CloudStorageLink,
     ],
     content: initialContent ?? "",
     onUpdate: ({ editor }) => {
@@ -282,6 +293,25 @@ export default function AdminEditor({
     setYoutubeUrl("");
     setYoutubePopoverOpen(false);
   }, [editor, youtubeUrl]);
+
+  const addCloudStorageLink = useCallback(() => {
+    if (!editor || !cloudStorageUrl) return;
+
+    const provider = detectCloudStorageProvider(cloudStorageUrl);
+    const title =
+      cloudStorageTitle.trim() || CLOUD_STORAGE_LABELS[provider] || "Файл";
+
+    editor.commands.setCloudStorageLink({
+      url: cloudStorageUrl,
+      provider,
+      title,
+    });
+
+    toast.success("Ссылка на облачное хранилище добавлена");
+    setCloudStorageUrl("");
+    setCloudStorageTitle("");
+    setCloudStoragePopoverOpen(false);
+  }, [editor, cloudStorageUrl, cloudStorageTitle]);
 
   const handleImageSelect = useCallback(
     (asset: any) => {
@@ -653,6 +683,61 @@ export default function AdminEditor({
                 />
                 <Button size="sm" onClick={addYoutube} className="w-full">
                   Вставить видео
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Cloud Storage Link */}
+          <Popover
+            open={cloudStoragePopoverOpen}
+            onOpenChange={setCloudStoragePopoverOpen}
+          >
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <CloudIcon size={16} />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    Ссылка на облачное хранилище
+                  </TooltipContent>
+                </Tooltip>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-3">
+                <div className="text-sm font-medium text-slate-700">
+                  Ссылка на файл в облаке
+                </div>
+                <Input
+                  placeholder="https://drive.google.com/..."
+                  value={cloudStorageUrl}
+                  onChange={(e) => setCloudStorageUrl(e.target.value)}
+                />
+                <Input
+                  placeholder="Название (опционально)"
+                  value={cloudStorageTitle}
+                  onChange={(e) => setCloudStorageTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addCloudStorageLink()}
+                />
+                {cloudStorageUrl && (
+                  <div className="text-xs text-slate-500">
+                    Определён сервис:{" "}
+                    <span className="font-medium">
+                      {CLOUD_STORAGE_LABELS[
+                        detectCloudStorageProvider(cloudStorageUrl)
+                      ] || "Неизвестный"}
+                    </span>
+                  </div>
+                )}
+                <Button
+                  size="sm"
+                  onClick={addCloudStorageLink}
+                  className="w-full"
+                  disabled={!cloudStorageUrl}
+                >
+                  Добавить ссылку
                 </Button>
               </div>
             </PopoverContent>
