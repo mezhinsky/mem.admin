@@ -227,6 +227,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // No stored session - user needs to login
       if (!sessionId || !csrfToken) {
         setIsLoading(false);
+        // Redirect to login if not already there
+        if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/auth/')) {
+          navigate('/login', { replace: true });
+        }
         return;
       }
 
@@ -264,11 +268,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } catch (error) {
         console.error('Session restore failed:', error);
         clearAuth();
+        // Redirect to login on session restore failure
+        if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/auth/')) {
+          navigate('/login', { replace: true });
+        }
       }
     };
 
     tryRestoreSession();
-  }, [setAuth, clearAuth]);
+  }, [setAuth, clearAuth, navigate]);
 
   /**
    * Proactive token refresh when expired but refreshable

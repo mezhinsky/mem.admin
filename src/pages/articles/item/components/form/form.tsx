@@ -3,7 +3,28 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import { ImageIcon, X, Check, ChevronsUpDown } from "lucide-react";
+import { ImageIcon, X, Check, ChevronsUpDown, Wand2 } from "lucide-react";
+
+// Таблица транслитерации кириллицы
+const translitMap: Record<string, string> = {
+  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "zh",
+  з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o",
+  п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "h", ц: "ts",
+  ч: "ch", ш: "sh", щ: "sch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
+};
+
+function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .split("")
+    .map((char) => translitMap[char] ?? char)
+    .join("")
+    .replace(/[^a-z0-9\s-]/g, "") // убираем всё кроме букв, цифр, пробелов и дефисов
+    .trim()
+    .replace(/\s+/g, "-") // пробелы в дефисы
+    .replace(/-+/g, "-") // убираем множественные дефисы
+    .replace(/^-|-$/g, ""); // убираем дефисы в начале и конце
+}
 import { cn } from "@/lib/utils";
 
 import {
@@ -209,16 +230,32 @@ const ArticleForm = forwardRef<ArticleFormHandle, ArticleFormProps>(
                 <FormItem>
                   <FormLabel>Slug</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="kak-sobrat-x-wing"
-                      {...field}
-                      onChange={(event) =>
-                        field.onChange(event.target.value.toLowerCase())
-                      }
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="kak-sobrat-x-wing"
+                        {...field}
+                        onChange={(event) =>
+                          field.onChange(event.target.value.toLowerCase())
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        title="Сгенерировать из заголовка"
+                        onClick={() => {
+                          const title = form.getValues("title");
+                          if (title) {
+                            field.onChange(generateSlug(title));
+                          }
+                        }}
+                      >
+                        <Wand2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormDescription>
-                    Используется в адресе страницы статьи.
+                    Используется в адресе страницы статьи. Нажмите на кнопку для генерации из заголовка.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
