@@ -411,3 +411,51 @@ div.tiptap.ProseMirror {
   color: #ffdcd7;
   background-color: #67060c;
 }
+
+/* Historical Note Block */
+.prose-content div[data-type="historical-note"],
+div[data-type="historical-note"] {
+  position: relative;
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+  border: 1px solid #fcd34d;
+  border-left: 4px solid #f59e0b;
+  border-radius: 0.5rem;
+}
+
+.prose-content div[data-type="historical-note"]::before,
+div[data-type="historical-note"]::before {
+  content: "";
+  position: absolute;
+  left: 0.875rem;
+  top: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='M10 9H8'/%3E%3Cpath d='M16 13H8'/%3E%3Cpath d='M16 17H8'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.prose-content div[data-type="historical-note"] p:first-child,
+div[data-type="historical-note"] p:first-child {
+  margin-top: 0;
+}
+
+.prose-content div[data-type="historical-note"] p:last-child,
+div[data-type="historical-note"] p:last-child {
+  margin-bottom: 0;
+}
+
+/* Dark mode */
+.dark .prose-content div[data-type="historical-note"],
+.dark div[data-type="historical-note"] {
+  background: linear-gradient(135deg, #422006 0%, #451a03 100%);
+  border-color: #92400e;
+  border-left-color: #f59e0b;
+}
+
+.dark .prose-content div[data-type="historical-note"]::before,
+.dark div[data-type="historical-note"]::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z'/%3E%3Cpath d='M14 2v4a2 2 0 0 0 2 2h4'/%3E%3Cpath d='M10 9H8'/%3E%3Cpath d='M16 13H8'/%3E%3Cpath d='M16 17H8'/%3E%3C/svg%3E");
+}

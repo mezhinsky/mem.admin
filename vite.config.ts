@@ -11,4 +11,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Используем _assets чтобы не конфликтовать с роутом /assets
+    assetsDir: "_assets",
+  },
 });

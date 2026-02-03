@@ -24,6 +24,8 @@ import {
   detectCloudStorageProvider,
   CLOUD_STORAGE_LABELS,
 } from "./extensions/cloud-storage-link";
+import { HistoricalNote } from "./extensions/historical-note";
+import { PaintBlock } from "./extensions/paint-block";
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
@@ -78,6 +80,8 @@ import {
   Redo,
   Palette,
   CloudIcon,
+  ScrollText,
+  Paintbrush,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -195,6 +199,9 @@ export default function AdminEditor({
   const [cloudStorageUrl, setCloudStorageUrl] = useState("");
   const [cloudStorageTitle, setCloudStorageTitle] = useState("");
   const [cloudStoragePopoverOpen, setCloudStoragePopoverOpen] = useState(false);
+  const [paintName, setPaintName] = useState("");
+  const [paintColor, setPaintColor] = useState("#3b82f6");
+  const [paintPopoverOpen, setPaintPopoverOpen] = useState(false);
 
   const lastInitialContent = useRef<string | null>(null);
 
@@ -244,6 +251,8 @@ export default function AdminEditor({
       TextStyle,
       Color,
       CloudStorageLink,
+      HistoricalNote,
+      PaintBlock,
     ],
     content: initialContent ?? "",
     onUpdate: ({ editor }) => {
@@ -312,6 +321,20 @@ export default function AdminEditor({
     setCloudStorageTitle("");
     setCloudStoragePopoverOpen(false);
   }, [editor, cloudStorageUrl, cloudStorageTitle]);
+
+  const addPaintBlock = useCallback(() => {
+    if (!editor || !paintName.trim()) return;
+
+    editor.commands.setPaintBlock({
+      name: paintName.trim(),
+      color: paintColor,
+    });
+
+    toast.success("Блок краски добавлен");
+    setPaintName("");
+    setPaintColor("#3b82f6");
+    setPaintPopoverOpen(false);
+  }, [editor, paintName, paintColor]);
 
   const handleImageSelect = useCallback(
     (asset: any) => {
@@ -554,6 +577,13 @@ export default function AdminEditor({
           >
             <Quote size={16} />
           </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().toggleHistoricalNote().run()}
+            isActive={editor.isActive("historicalNote")}
+            tooltip="Историческая справка"
+          >
+            <ScrollText size={16} />
+          </ToolbarButton>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -738,6 +768,62 @@ export default function AdminEditor({
                   disabled={!cloudStorageUrl}
                 >
                   Добавить ссылку
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Paint Block */}
+          <Popover open={paintPopoverOpen} onOpenChange={setPaintPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Paintbrush size={16} />
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    Блок краски
+                  </TooltipContent>
+                </Tooltip>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-3">
+                <div className="text-sm font-medium text-slate-700">
+                  Блок краски
+                </div>
+                <Input
+                  placeholder="Название краски (например: RAL 3020)"
+                  value={paintName}
+                  onChange={(e) => setPaintName(e.target.value)}
+                />
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-lg border border-slate-200 shadow-inner flex-shrink-0"
+                    style={{ backgroundColor: paintColor }}
+                  />
+                  <Input
+                    type="text"
+                    placeholder="#3b82f6"
+                    value={paintColor}
+                    onChange={(e) => setPaintColor(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addPaintBlock()}
+                    className="font-mono"
+                  />
+                  <input
+                    type="color"
+                    value={paintColor}
+                    onChange={(e) => setPaintColor(e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                  />
+                </div>
+                <Button
+                  size="sm"
+                  onClick={addPaintBlock}
+                  className="w-full"
+                  disabled={!paintName.trim()}
+                >
+                  Добавить блок
                 </Button>
               </div>
             </PopoverContent>
