@@ -863,7 +863,7 @@ export default function AdminEditor({
           </DialogHeader>
           <div className="min-h-0 overflow-y-auto">
             <FileManager
-              mode="pick"
+              mode="manage"
               types={["IMAGE"]}
               accept="image/*"
               onPick={handleImageSelect}

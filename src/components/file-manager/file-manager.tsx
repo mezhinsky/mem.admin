@@ -594,7 +594,7 @@ export default function FileManager({
                             <Copy size={16} />
                           </Button>
 
-                          {mode === "pick" && onPick && (
+                          {onPick && (
                             <Button
                               size="sm"
                               variant="secondary"
